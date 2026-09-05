@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interview Coach</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Interview Coach</h1>
+      <p class="sub">System-design practice. Talk over it — it can tell the difference.</p>
+    </header>
+
+    <section class="controls">
+      <label>Language
+        <select id="language">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी / Hindi</option>
+        </select>
+      </label>
+      <label>Question
+        <select id="question"><option value="">Random</option></select>
+      </label>
+      <button id="call" class="primary">Start call</button>
+      <span id="state" class="state idle">idle</span>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Transcript</h2>
+        <div id="transcript" class="transcript"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Latency</h2>
+        <div class="tiles">
+          <div class="tile"><span id="m-p95">—</span><label>p95 e2e</label></div>
+          <div class="tile"><span id="m-p50">—</span><label>p50 e2e</label></div>
+          <div class="tile"><span id="m-ttft">—</span><label>LLM TTFT</label></div>
+          <div class="tile"><span id="m-ttfb">—</span><label>TTS TTFB</label></div>
+          <div class="tile"><span id="m-int">—</span><label>interruptions</label></div>
+          <div class="tile"><span id="m-bc">—</span><label>backchannels</label></div>
+          <div class="tile"><span id="m-cost">—</span><label>cost</label></div>
+        </div>
+        <div class="scroll">
+          <table id="turns">
+            <thead><tr>
+              <th>#</th><th>EOU</th><th>STT</th><th>LLM TTFT</th><th>TTS TTFB</th><th>e2e</th><th>$</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span id="session-id"></span>
+      <button id="erase" class="danger" hidden>Delete this session</button>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.2/dist/livekit-client.umd.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

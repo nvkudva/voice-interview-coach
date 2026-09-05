@@ -1,0 +1,17 @@
+{
+  "name": "interview-coach",
+  "trunk_ids": ["ST_replace_with_your_trunk_id"],
+  "rule": {
+    "dispatchRuleIndividual": {
+      "roomPrefix": "coach"
+    }
+  },
+  "room_config": {
+    "agents": [
+      {
+        "agent_name": "interview-coach",
+        "metadata": "{\"language\": \"en\"}"
+      }
+    ]
+  }
+}
