@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv venv --allow-existing -q && uv pip install -q -e \".[dev]\" 2>&1 | tail -3"
+          }
+        ]
+      }
+    ]
+  }
+}
