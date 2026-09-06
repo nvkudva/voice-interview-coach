@@ -18,6 +18,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Avatar providers are opt-in: install only the one AVATAR_MODEL names.
+# lemonslice needs nothing extra — it is served by the LiveKit gateway.
+tavus = ["livekit-plugins-tavus==1.8.0"]
+bey = ["livekit-plugins-bey==1.8.0"]
+simli = ["livekit-plugins-simli==1.8.0"]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",

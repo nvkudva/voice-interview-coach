@@ -111,3 +111,22 @@ def test_over_budget_turns_counts_only_breaches():
     _turn(sink, ttft=0.2)      # ~0.64s, inside budget
     _turn(sink, ttft=1.5)      # ~1.94s, over
     assert sink.summary()["over_budget_turns"] == 1
+
+
+def test_avatar_cost_joins_the_session_total():
+    sink = MetricsSink(avatar_model="tavus/r1", cost_ceiling_usd=0.85)
+    _turn(sink)
+    summary = sink.summary(session_seconds=300)
+    assert summary["avatar_cost_usd"] > 0
+    assert summary["avatar_model"] == "tavus/r1"
+    # Tavus at $0.37/min cannot fit a 5-minute session under the ceiling.
+    assert summary["over_ceiling"] is True
+
+
+def test_voice_only_session_bills_no_video():
+    sink = MetricsSink(cost_ceiling_usd=0.18)
+    _turn(sink)
+    summary = sink.summary(session_seconds=300)
+    assert summary["avatar_cost_usd"] == 0.0
+    assert summary["avatar_model"] is None
+    assert summary["over_ceiling"] is False

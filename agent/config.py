@@ -49,6 +49,19 @@ class SessionConfig:
     tts_model: str = field(default_factory=lambda: _env("TTS_MODEL", "cartesia/sonic-3"))
     tts_fallback: str = field(default_factory=lambda: _env("TTS_FALLBACK"))
 
+    # The interview room: a photoreal avatar joins the call and the candidate's
+    # camera is on, so a practice session looks like the real thing.
+    avatar_enabled: bool = field(
+        default_factory=lambda: _env("AVATAR_ENABLED", "true").lower() == "true"
+    )
+    avatar_model: str = field(default_factory=lambda: _env("AVATAR_MODEL", "lemonslice"))
+    avatar_join_timeout: float = field(
+        default_factory=lambda: float(_env("AVATAR_JOIN_TIMEOUT", "20"))
+    )
+    camera_enabled: bool = field(
+        default_factory=lambda: _env("CAMERA_ENABLED", "true").lower() == "true"
+    )
+
     language: str = field(default_factory=lambda: _env("COACH_LANGUAGE", DEFAULT_LANGUAGE))
 
     # Turn handling. Defaults are the tuned values from prd.md §6.
@@ -76,7 +89,7 @@ class SessionConfig:
     vad_min_speech: float = field(default_factory=lambda: float(_env("VAD_MIN_SPEECH", "0.05")))
 
     cost_ceiling_usd: float = field(
-        default_factory=lambda: float(_env("COST_CEILING_USD", "0.18"))
+        default_factory=lambda: float(_env("COST_CEILING_USD", "0.85"))
     )
 
     def tts_voice(self, language: str | None = None) -> str:

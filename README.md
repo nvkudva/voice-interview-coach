@@ -1,8 +1,10 @@
 # Voice Interview Coach
 
 A real-time LiveKit voice agent you can call, interrupt, and that calls tools.
-It runs a system-design interview: asks a question, listens through a long
-answer, pushes back on hand-waving, and scores the result as JSON.
+It runs a system-design interview as a **video call**: a photoreal coach on
+camera asks a question, listens through a long answer, pushes back on
+hand-waving, and scores the result as JSON. Your camera is on too — you join
+through a device-check lobby, the way you would join a real interview.
 
 Built as a portfolio piece and as the foundation for later voice products.
 Full spec in [`prd.md`](prd.md).
@@ -11,6 +13,9 @@ Full spec in [`prd.md`](prd.md).
 
 ## What it does
 
+- **It looks like the interview.** A photoreal avatar joins the room on video
+  and speaks the coach's lines in lip-sync; your camera publishes alongside it.
+  A failed avatar degrades to voice, never to silence.
 - **Turn-taking that survives a real conversation.** Semantic end-of-turn
   detection, not a silence timer — thinking mid-sentence does not hand the
   floor to the agent.
@@ -42,8 +47,10 @@ actually happened.
 
 ## Cost
 
-**$0.18 per 5-minute session** on the default stack; **$0.11** on Haiku.
-Breakdown and the levers in [`docs/cost.md`](docs/cost.md).
+**$0.65 per 5-minute session** with video, **$0.15** without. Avatar video
+bills per minute of wall-clock — including silence — and is about four fifths
+of a session, so `AVATAR_ENABLED=false` is a bigger saving than every voice-side
+optimisation combined. Breakdown in [`docs/cost.md`](docs/cost.md).
 
 ## Quick start
 
@@ -69,6 +76,7 @@ open http://localhost:8080
 | STT | `deepgram/nova-3`, `language=multi` | `STT_MODEL` |
 | LLM | `anthropic/claude-sonnet-4-6` | `LLM_MODEL` |
 | TTS | `cartesia/sonic-3` | `TTS_MODEL` |
+| Avatar | `lemonslice` | `AVATAR_MODEL` (or `AVATAR_ENABLED=false`) |
 | VAD | silero, `min_silence_duration=0.2` | `VAD_MIN_SILENCE` |
 | Turn detection | `inference.TurnDetector()` | — |
 
@@ -133,7 +141,7 @@ docs/       design system, UX spec, tuning, cost, decisions
 ## Milestones
 
 - [ ] 1 · Console agent, one full turn (code in place, unverified against a live call)
-- [x] 2 · Browser client built (deploy pending)
+- [x] 2 · Browser client built — video room, device lobby (deploy pending)
 - [ ] 3 · Latency tuned, p95 under 800 ms over 20 turns
 - [ ] 4 · Three tools with filler speech
 - [ ] 5 · Coach persona and JSON scoring

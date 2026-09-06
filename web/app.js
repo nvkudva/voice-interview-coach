@@ -20,7 +20,8 @@ const STATUS_DEBOUNCE_MS = 400;
 
 // Overwritten from GET /api/config. The server owns these thresholds; the
 // client must never be a second source of truth for them.
-let BUDGETS = { latency: 0.8, ceiling: 0.18 };
+let BUDGETS = { latency: 0.8, ceiling: 0.85 };
+let ROOM_CFG = { avatar: true, camera: true, avatarModel: null };
 
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const $ = (id) => document.getElementById(id);
@@ -83,6 +84,11 @@ const voice = {
     waveline.onState(next);
     // Debounced so a listening→thinking→speaking flurry does not flood a
     // screen reader with three announcements in 300ms.
+    const coachState = document.getElementById("coach-state");
+    if (coachState && ["listening","hearing","thinking","speaking","waiting"].includes(next)) {
+      coachState.textContent =
+        next === "speaking" ? "speaking" : next === "thinking" ? "thinking" : "listening";
+    }
     this._pending = STATE_LABEL[next] || next;
     clearTimeout(this._timer);
     this._timer = setTimeout(() => {
@@ -269,7 +275,83 @@ const session = {
   // -1 until the candidate's first answer. The coach's opening question
   // belongs to no turn, exactly as MetricsSink sees it.
   turnCursor: -1,
+  micOn: true,
+  camOn: true,
 };
+
+/* ========================================================================== */
+/* Local media — the lobby preview, and the tracks we carry into the room     */
+/* ========================================================================== */
+
+const media = {
+  stream: null,
+  levelRaf: 0,
+
+  async open({ video }) {
+    this.close();
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: video ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false,
+      });
+    } catch (err) {
+      // A camera failure must not cost you the interview — fall back to audio.
+      if (video) {
+        session.camOn = false;
+        setPreviewCamera(false);
+        return this.open({ video: false });
+      }
+      throw err;
+    }
+    $("preview-video").srcObject = this.stream;
+    setPreviewCamera(Boolean(video) && this.stream.getVideoTracks().length > 0);
+    this.meter();
+    return this.stream;
+  },
+
+  // Five bars driven by real RMS. The point is proof the mic works, before
+  // you have staked an interview on it.
+  meter() {
+    cancelAnimationFrame(this.levelRaf);
+    if (!this.stream || reduceMotion.matches) return;
+    let ctx, analyser;
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      ctx.createMediaStreamSource(this.stream).connect(analyser);
+    } catch {
+      return;
+    }
+    const data = new Uint8Array(analyser.fftSize);
+    const bars = [...$("level").children];
+    const tick = () => {
+      this.levelRaf = requestAnimationFrame(tick);
+      analyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for (const v of data) sum += ((v - 128) / 128) ** 2;
+      const lit = session.micOn
+        ? Math.round(Math.min(1, Math.sqrt(sum / data.length) * 4.5) * bars.length)
+        : 0;
+      bars.forEach((b, i) => b.toggleAttribute("data-lit", i < lit));
+    };
+    tick();
+  },
+
+  close() {
+    cancelAnimationFrame(this.levelRaf);
+    this.levelRaf = 0;
+    this.stream?.getTracks().forEach((t) => t.stop());
+    this.stream = null;
+  },
+};
+
+function setPreviewCamera(on) {
+  session.camOn = on;
+  $("preview").dataset.camera = on ? "on" : "off";
+  $("pre-cam").setAttribute("aria-pressed", String(on));
+  $("pre-cam").querySelector("use").setAttribute("href", on ? "#i-cam" : "#i-cam-off");
+}
 
 /* --- boot ---------------------------------------------------------------- */
 
@@ -301,13 +383,28 @@ async function init() {
 
   const params = new URLSearchParams(location.search);
   if (params.get("view") === "engineer") setEngineerView(true);
-  if (params.get("session")) loadSession(params.get("session"));
+  if (params.get("session")) { loadSession(params.get("session")); return; }
+
+  // Show yourself before anyone else sees you. A denial here is not fatal —
+  // it just means the lobby cannot preview; joining asks again.
+  try {
+    await media.open({ video: ROOM_CFG.camera });
+  } catch (err) {
+    setPreviewCamera(false);
+    $("preview-off-text").textContent =
+      err?.name === "NotAllowedError" ? "Camera and microphone blocked" : "No camera found";
+  }
 }
 
 async function loadConfig() {
   try {
     const cfg = await (await fetch("/api/config")).json();
     BUDGETS = { latency: cfg.latency_budget_seconds, ceiling: cfg.cost_ceiling_usd };
+    ROOM_CFG = {
+      avatar: cfg.avatar_enabled !== false,
+      camera: cfg.camera_enabled !== false,
+      avatarModel: cfg.avatar_model,
+    };
     $("chip-gap-hint").textContent = `Target under ${Math.round(BUDGETS.latency * 1000)} ms`;
     $("chip-cost-hint").textContent = `Model and transport spend. Target under $${BUDGETS.ceiling.toFixed(2)}`;
   } catch {
@@ -339,8 +436,26 @@ function safeGet(k) { try { return localStorage.getItem(k); } catch { return nul
 function safeSet(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
 
 function wireControls() {
-  $("call").onclick = () => (session.room ? endCall() : startCall());
+  $("call").onclick = startCall;
+  $("end").onclick = () => endCall();
   $("mute").onclick = toggleMute;
+  $("cam").onclick = toggleCamera;
+  $("pre-mic").onclick = () => {
+    session.micOn = !session.micOn;
+    $("pre-mic").setAttribute("aria-pressed", String(session.micOn));
+    $("pre-mic").querySelector("use").setAttribute("href", session.micOn ? "#i-mic" : "#i-mic-off");
+    media.stream?.getAudioTracks().forEach((t) => (t.enabled = session.micOn));
+  };
+  $("pre-cam").onclick = async () => {
+    const next = !session.camOn;
+    await media.open({ video: next });
+    setPreviewCamera(next && Boolean(media.stream?.getVideoTracks().length));
+  };
+  $("panel-toggle").onclick = () => {
+    const open = $("side").hidden;
+    $("side").hidden = !open;
+    $("panel-toggle").setAttribute("aria-pressed", String(open));
+  };
   $("erase").onclick = () => $("confirm-delete").showModal();
   $("cancel-delete").onclick = () => $("confirm-delete").close();
   $("confirm-delete-btn").onclick = eraseSession;
@@ -420,7 +535,8 @@ async function startCall() {
   }
 
   try {
-    await room.localParticipant.setMicrophoneEnabled(true);
+    await room.localParticipant.setMicrophoneEnabled(session.micOn);
+    if (session.camOn) await room.localParticipant.setCameraEnabled(true);
   } catch (err) {
     await room.disconnect();
     session.room = null;
@@ -429,6 +545,7 @@ async function startCall() {
 
   const mic = room.localParticipant.getTrackPublication(LK.Track.Source.Microphone);
   if (mic?.track?.mediaStream) waveline.attach(mic.track.mediaStream, "mic");
+  attachSelfVideo();
 
   goLive();
 }
@@ -436,13 +553,16 @@ async function startCall() {
 function goLive() {
   voice.set("waiting");
   lockControls(false);
-  $("call").dataset.live = "";
-  $("call-label").textContent = "End call";
-  $("call").querySelector("use").setAttribute("href", "#i-end");
-  $("mute").hidden = false;
-  $("timer").hidden = false;
+  // The lobby is done; the room takes the screen.
+  media.close();
+  $("lobby").hidden = true;
+  $("room").hidden = false;
   $("transcript-empty").hidden = false;
   $("rail-note").textContent = "Live";
+  $("room-note").textContent = ROOM_CFG.avatar
+    ? "Your coach is on video. Interrupt whenever you would in a real interview."
+    : "Voice only for this session.";
+  $("coach-note").textContent = ROOM_CFG.avatar ? "Waiting for the coach" : "Voice only";
 
   session.startedAt = Date.now();
   session.timerId = setInterval(tickTimer, 1000);
@@ -462,9 +582,26 @@ function goLive() {
 
 function wireRoom(room) {
   room.on(LK.RoomEvent.TrackSubscribed, (track) => {
-    if (track.kind !== LK.Track.Kind.Audio) return;
-    track.attach();
-    if (track.mediaStream) waveline.attach(track.mediaStream, "agent");
+    if (track.kind === LK.Track.Kind.Audio) {
+      track.attach();
+      if (track.mediaStream) waveline.attach(track.mediaStream, "agent");
+      return;
+    }
+    // The only remote video in this room is the coach — either the agent
+    // itself or the avatar worker publishing on its behalf.
+    if (track.kind === LK.Track.Kind.Video) {
+      track.attach($("coach-video"));
+      $("tile-coach").dataset.video = "on";
+      $("coach-state").textContent = "live";
+    }
+  });
+
+  room.on(LK.RoomEvent.TrackUnsubscribed, (track) => {
+    if (track.kind === LK.Track.Kind.Video) {
+      track.detach($("coach-video"));
+      $("tile-coach").removeAttribute("data-video");
+      $("coach-note").textContent = "Coach video ended";
+    }
   });
 
   room.on(LK.RoomEvent.ParticipantAttributesChanged, (changed, participant) => {
@@ -522,12 +659,17 @@ async function endCall(remote = false) {
   if (room && !remote) { try { await room.disconnect(); } catch { /* already gone */ } }
 
   voice.set("ended");
-  $("call").removeAttribute("data-live");
-  $("call-label").textContent = "Start call";
-  $("call").querySelector("use").setAttribute("href", "#i-mic");
-  $("mute").hidden = true;
+  $("room").hidden = true;
+  $("lobby").hidden = false;
+  $("side").hidden = false;                    // the score lands here
+  $("panel-toggle").setAttribute("aria-pressed", "true");
+  $("call-label").textContent = "Start another interview";
+  $("room-note").textContent = "";
   $("rail-note").textContent = "Final";
   $("erase").hidden = !session.id;
+  $("tile-coach").removeAttribute("data-video");
+  $("tile-self").removeAttribute("data-video");
+  media.open({ video: session.camOn }).catch(() => setPreviewCamera(false));
 
   if (session.summary.over_ceiling) {
     notice("warning", "Over the cost target",
@@ -541,10 +683,40 @@ async function endCall(remote = false) {
 async function toggleMute() {
   const lp = session.room?.localParticipant;
   if (!lp) return;
-  const muted = lp.isMicrophoneEnabled;
-  await lp.setMicrophoneEnabled(!muted);
-  $("mute").setAttribute("aria-pressed", String(muted));
-  $("mute-label").textContent = muted ? "Unmute" : "Mute";
+  const on = lp.isMicrophoneEnabled;          // currently on -> we are muting
+  await lp.setMicrophoneEnabled(!on);
+  session.micOn = !on;
+  $("mute").setAttribute("aria-pressed", String(on));
+  $("mute-label").textContent = on ? "Unmute" : "Mute";
+  $("mute").querySelector("use").setAttribute("href", on ? "#i-mic-off" : "#i-mic");
+  $("self-muted").hidden = !on;
+}
+
+async function toggleCamera() {
+  const lp = session.room?.localParticipant;
+  if (!lp) return;
+  const on = lp.isCameraEnabled;
+  await lp.setCameraEnabled(!on);
+  session.camOn = !on;
+  $("cam").setAttribute("aria-pressed", String(on));
+  $("cam-label").textContent = on ? "Start video" : "Stop video";
+  $("cam").querySelector("use").setAttribute("href", on ? "#i-cam-off" : "#i-cam");
+  if (on) {
+    $("tile-self").removeAttribute("data-video");
+  } else {
+    attachSelfVideo();
+  }
+}
+
+function attachSelfVideo() {
+  const pub = session.room?.localParticipant
+    ?.getTrackPublication(LK.Track.Source.Camera);
+  if (pub?.track) {
+    pub.track.attach($("self-video"));
+    $("tile-self").dataset.video = "on";
+  } else {
+    $("tile-self").removeAttribute("data-video");
+  }
 }
 
 function tickTimer() {
@@ -568,6 +740,8 @@ function resetSession() {
   session.agentState = null;
   session.reviewing = false;
   session.turnCursor = -1;
+  $("tile-coach").removeAttribute("data-video");
+  $("coach-state").textContent = "joining";
   $("transcript").replaceChildren();
   $("turns-body").replaceChildren(emptyRow());
   $("score-card").hidden = true;
@@ -769,7 +943,12 @@ function renderChips() {
     : "Interruptions and backchannels";
 
   const cost = s.total_cost_usd;
-  setChip("chip-cost", cost ? `$${cost.toFixed(4)}` : "—", !!s.over_ceiling);
+  setChip("chip-cost", cost ? `$${cost.toFixed(3)}` : "—", !!s.over_ceiling);
+  if (s.avatar_cost_usd) {
+    const share = Math.round((s.avatar_cost_usd / s.total_cost_usd) * 100);
+    $("chip-cost-hint").textContent =
+      `${share}% of it is the coach's video (${s.avatar_model}). Target under $${BUDGETS.ceiling.toFixed(2)}`;
+  }
 }
 
 function setChip(id, value, over) {
@@ -1033,6 +1212,8 @@ async function loadSession(id) {
     const record = await (await fetch(`/api/sessions/${id}`)).json();
     $("session-id").textContent = id;
     $("erase").hidden = false;
+    $("side").hidden = false;
+    $("panel-toggle").setAttribute("aria-pressed", "true");
     $("rail-note").textContent = "Recorded";
     notice("info", "Recorded session",
       "You are looking at a recorded session, not a live call.");

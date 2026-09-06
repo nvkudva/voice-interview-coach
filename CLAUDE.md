@@ -57,3 +57,12 @@ scoring are fire-and-forget or run at shutdown.
   DeepSeek, ZAI and xAI.
 - `AgentSessionUsage` exposes `model_usage`, not `models`.
 - `metrics.Metadata` lives in `livekit.agents.metrics.base`, not the package root.
+- **`avatar.start()` must run before `session.start()`.** Starting the avatar
+  rebinds the agent's audio tail to the avatar worker, which then publishes
+  lip-synced video *and* audio on the agent's behalf. Start it after and the
+  first reply goes out as bare audio with no video.
+- With an avatar running, the browser subscribes to the **avatar** participant,
+  not the agent. It carries `lk.publish_on_behalf` set to the agent's identity.
+- Avatar video bills per minute of wall-clock, not per minute of speech, and it
+  dominates every other cost line. A failed avatar must clear
+  `MetricsSink.avatar_model` or the session bills for video nobody saw.

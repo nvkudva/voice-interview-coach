@@ -287,8 +287,11 @@ svg { display: block; }
 .wordmark {
   display: flex; align-items: center; gap: var(--space-4);
   font: var(--type-subhead); letter-spacing: -.006em;
-  color: var(--text-primary); text-decoration: none;
+  color: var(--text-primary); text-decoration: none; white-space: nowrap;
 }
+/* At phone widths the state pill is what matters; the mark alone still
+   identifies the product. */
+@media (max-width: 480px) { .wordmark span { display: none; } }
 .wordmark__mark { width: 18px; height: 18px; color: var(--voice-current);
   transition: color var(--dur-base) var(--ease-standard); }
 
@@ -333,7 +336,7 @@ svg { display: block; }
   border-radius: var(--radius-pill);
   background: var(--surface-sunken);
   font: var(--type-label); letter-spacing: .09em; text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--text-secondary); white-space: nowrap;
   transition: border-color var(--dur-base), background-color var(--dur-base);
 }
 .pill__glyph { width: 12px; height: 12px; color: var(--voice-current); flex: none; }
@@ -449,6 +452,194 @@ svg { display: block; }
 .switch input:checked + .switch__track .switch__thumb { transform: translateX(14px); background: var(--accent); }
 .switch input:focus-visible + .switch__track { outline: var(--bw-focus) solid var(--focus-ring); outline-offset: 2px; }
 .switch__label { font: var(--type-button); color: var(--text-secondary); }
+
+
+/* ==========================================================================
+   The interview room — lobby, video stage, call controls
+   ========================================================================== */
+
+/* ---- Lobby: device check before anyone sees you -------------------------- */
+.lobby {
+  display: grid; gap: var(--space-9);
+  padding-block: var(--space-9) var(--space-8);
+  align-items: center;
+}
+@media (min-width: 900px) { .lobby { grid-template-columns: minmax(0,1fr) 460px; gap: var(--space-11); } }
+@media (min-width: 1200px) { .lobby { grid-template-columns: minmax(0,1fr) 560px; } }
+
+.lobby__copy { min-width: 0; max-width: 56ch; }
+.lobby__title { font: var(--type-title); letter-spacing: -.02em; text-wrap: pretty; }
+@media (min-width: 900px) { .lobby__title { font: var(--type-display); letter-spacing: -.026em; } }
+.lobby__lede { margin-top: var(--space-5); color: var(--text-secondary); text-wrap: pretty; }
+.lobby__fields { display: flex; gap: var(--space-5); flex-wrap: wrap; margin-top: var(--space-8); }
+.lobby__fields .field { flex: 0 0 auto; }
+.lobby__fields .field--grow { flex: 1 1 220px; min-width: 0; }
+.lobby__fields .select { width: 100%; }
+.lobby__actions {
+  display: flex; align-items: center; gap: var(--space-5);
+  margin-top: var(--space-7); flex-wrap: wrap;
+}
+
+/* The preview is a real video surface, so it is ink-dark in both themes —
+   a light card behind a webcam feed reads as a broken image. */
+.preview, .tile {
+  position: relative; overflow: hidden;
+  background: #0E0D0C;
+  border: var(--bw-hairline) solid var(--border);
+  border-radius: var(--radius-md);
+}
+.preview { aspect-ratio: 4 / 3; }
+.preview__video, .tile__video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; background: #0E0D0C;
+}
+/* You are used to seeing yourself in a mirror; an unflipped self-view reads
+   as wrong even though it is what everyone else sees. */
+.preview__video, .tile__video--mirror { transform: scaleX(-1); }
+
+.preview__off, .tile__fallback {
+  position: absolute; inset: 0;
+  display: grid; place-content: center; justify-items: center; gap: var(--space-5);
+  color: #948D83; background: #0E0D0C;
+}
+.preview__off svg, .tile__fallback svg { width: 34px; height: 34px; }
+.preview__off span, .tile__note { font: var(--type-body-sm); }
+.preview[data-camera="on"] .preview__off, .tile[data-video="on"] .tile__fallback { display: none; }
+
+.preview__bar {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-5);
+  background: linear-gradient(to top, rgba(14,13,12,.82), rgba(14,13,12,0));
+}
+.pillbtn {
+  display: inline-flex; align-items: center; gap: var(--space-4);
+  height: 34px; padding: 0 var(--space-5);
+  border: var(--bw-hairline) solid rgba(243,241,237,.28);
+  border-radius: var(--radius-pill);
+  background: rgba(14,13,12,.55); color: #F3F1ED;
+  font: var(--type-caption); cursor: pointer;
+  transition: background-color var(--dur-fast), border-color var(--dur-fast);
+}
+.pillbtn svg { width: 15px; height: 15px; }
+.pillbtn:hover { background: rgba(243,241,237,.16); }
+.pillbtn[aria-pressed="false"] {
+  background: var(--critical); border-color: var(--critical); color: #FFFFFF;
+}
+.pillbtn:focus-visible { outline: var(--bw-focus) solid #F3F1ED; outline-offset: 2px; }
+
+/* Input level: five bars, lit by RMS. Proof the mic works before you rely on it. */
+.level { display: inline-flex; align-items: flex-end; gap: 3px; margin-left: auto; height: 18px; }
+.level i {
+  width: 3px; height: 5px; border-radius: 1px;
+  background: rgba(243,241,237,.30);
+  transition: height var(--dur-fast) linear, background-color var(--dur-fast);
+}
+.level i:nth-child(2) { height: 9px; } .level i:nth-child(3) { height: 14px; }
+.level i:nth-child(4) { height: 9px; }  .level i:nth-child(5) { height: 5px; }
+.level i[data-lit] { background: var(--voice-listening); }
+
+/* ---- The stage ---------------------------------------------------------- */
+.room { padding-block: var(--space-8) var(--space-6); }
+.stage { display: grid; gap: var(--space-5); grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) {
+  /* The coach leads; you are present but subordinate — the same proportion a
+     real interview has. */
+  .stage { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+}
+@media (min-width: 1200px) { .stage { grid-template-columns: minmax(0, 1fr) 360px; } }
+
+.tile { margin: 0; aspect-ratio: 16 / 9; }
+.tile--coach { aspect-ratio: 16 / 9; }
+.tile--self { aspect-ratio: 4 / 3; }
+@media (max-width: 899px) {
+  /* On a phone the self-view is a corner inset, not a second row — the coach
+     keeps the screen. */
+  .stage { position: relative; }
+  .tile--self {
+    position: absolute; right: var(--space-5); bottom: var(--space-5);
+    width: 108px; aspect-ratio: 3 / 4; z-index: 2;
+    box-shadow: var(--shadow-2);
+  }
+  .tile--self .tile__caption { display: none; }
+}
+
+/* The coach tile carries the voice state — the one place on the stage that
+   changes, so the eye has a single thing to track. */
+.tile--coach { border: var(--bw-hairline) solid var(--border); }
+:root[data-voice="speaking"] .tile--coach { border-color: var(--voice-speaking); }
+:root[data-voice="listening"] .tile--coach { border-color: var(--voice-listening); }
+:root[data-voice="thinking"] .tile--coach { border-color: var(--voice-thinking); }
+
+.tile__caption {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  background: linear-gradient(to top, rgba(14,13,12,.78), rgba(14,13,12,0));
+  color: #F3F1ED; pointer-events: none;
+}
+.tile__name { font: var(--type-caption); }
+.tile__state {
+  font: var(--type-label); letter-spacing: .09em; text-transform: uppercase;
+  color: var(--voice-current); margin-left: auto;
+}
+.tile__muted { margin-left: auto; color: var(--critical); display: grid; place-items: center; }
+.tile__muted svg { width: 15px; height: 15px; }
+.tile__avatar {
+  width: 72px; height: 72px; display: grid; place-items: center;
+  border-radius: var(--radius-pill); background: rgba(243,241,237,.07);
+}
+
+/* ---- Control bar -------------------------------------------------------- */
+.controls {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-5); flex-wrap: wrap;
+  margin-top: var(--space-6); padding: var(--space-5) var(--space-6);
+  background: var(--surface);
+  border: var(--bw-hairline) solid var(--border);
+  border-radius: var(--radius-md);
+}
+.controls__group { display: flex; align-items: center; gap: var(--space-4); }
+.ctl {
+  display: inline-flex; align-items: center; gap: var(--space-4);
+  height: 40px; padding: 0 var(--space-6);
+  border: var(--bw-hairline) solid var(--border-control);
+  border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text-primary);
+  font: var(--type-button); cursor: pointer;
+  transition: background-color var(--dur-fast), border-color var(--dur-fast);
+}
+.ctl svg { width: 16px; height: 16px; }
+.ctl:hover { background: var(--surface-sunken); }
+/* On the input buttons, aria-pressed=true means the input is OFF, and the
+   critical fill says the room cannot hear or see you. That reading must not
+   leak onto the panel toggle, where pressed just means "open". */
+#mute[aria-pressed="true"], #cam[aria-pressed="true"] {
+  background: var(--critical-soft); border-color: var(--critical); color: var(--critical);
+}
+#panel-toggle[aria-pressed="true"] {
+  background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
+}
+.ctl--end { background: var(--critical); border-color: var(--critical); color: #FFFFFF; }
+.ctl--end:hover { background: var(--critical-hover); }
+.controls .timer { font: var(--type-num-md); color: var(--text-secondary); }
+
+.secondary-row__note { font: var(--type-caption); color: var(--text-tertiary); }
+.side__head {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-6); flex-wrap: wrap;
+  padding-bottom: var(--space-6);
+  border-bottom: var(--bw-hairline) solid var(--border-subtle);
+}
+
+@media (max-width: 599px) {
+  .controls { position: sticky; bottom: var(--space-4); z-index: var(--z-sticky); box-shadow: var(--shadow-2); }
+  .ctl span:not(.sr-only) { display: none; }
+  .ctl { padding: 0 var(--space-5); }
+  .ctl--end span { display: inline; }
+}
 
 /* ==========================================================================
    Layout
@@ -829,16 +1020,7 @@ td.budget[data-over] { --fill: var(--warning-soft); }
    xs: the call control becomes a thumb-zone bar; the rail folds away
    ========================================================================== */
 @media (max-width: 599px) {
-  main { padding-bottom: calc(64px + var(--space-11)); }
-  .controlbar__actions {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-appbar);
-    height: calc(64px + env(safe-area-inset-bottom));
-    padding: var(--space-4) var(--pad-x) calc(var(--space-4) + env(safe-area-inset-bottom));
-    background: var(--canvas);
-    border-top: var(--bw-hairline) solid var(--border);
-    justify-content: space-between;
-  }
-  .call { flex: 1; justify-content: center; }
+  .call { width: 100%; justify-content: center; }
   .transcript-wrap { max-height: 46vh; }
   .msg { max-width: 100%; }
   .chips { grid-template-columns: 1fr; }

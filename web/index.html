@@ -30,6 +30,10 @@
       <g id="i-copy"><rect x="5.25" y="5.25" width="8" height="8" rx="1.5"/><path d="M10.75 5.25v-1.5a1.5 1.5 0 0 0-1.5-1.5h-5a1.5 1.5 0 0 0-1.5 1.5v5a1.5 1.5 0 0 0 1.5 1.5h1.5"/></g>
       <g id="i-alert"><path d="M8 2.6 14.4 13H1.6z"/><path d="M8 6.4v3M8 11.3v.1"/></g>
       <g id="i-history"><path d="M2.9 8a5.1 5.1 0 1 0 1.6-3.7L2.6 6.1"/><path d="M2.5 3v3.2h3.2M8 5.3V8l2 1.4"/></g>
+      <g id="i-cam"><path d="M1.75 5a1.5 1.5 0 0 1 1.5-1.5h5a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 1.75 11z"/><path d="m9.75 8.4 3.1 2.2a.6.6 0 0 0 .95-.5V5.9a.6.6 0 0 0-.95-.5l-3.1 2.2z"/></g>
+      <g id="i-cam-off"><path d="M6.4 3.5h1.85a1.5 1.5 0 0 1 1.5 1.5v1.6M9.75 9.9V11a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 1.75 11V5a1.5 1.5 0 0 1 1.5-1.5"/><path d="m9.75 8.4 3.1 2.2a.6.6 0 0 0 .95-.5V5.9a.6.6 0 0 0-.95-.5L11.2 6.6"/><path d="M2 2l12 12"/></g>
+      <g id="i-panel"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M10 3v10"/></g>
+      <g id="i-user"><circle cx="8" cy="5.4" r="2.6"/><path d="M2.9 13.4a5.1 5.1 0 0 1 10.2 0"/></g>
       <g id="i-wordmark"><path d="M2 8h1.6M6 3.6v8.8M9.4 5.6v4.8M12.8 8h1.6" stroke-linecap="round"/></g>
     </defs>
   </svg>
@@ -85,64 +89,140 @@
 
   <main id="main" class="container">
 
-    <!-- ── Pre-call ─────────────────────────────────────────────────── -->
-    <section class="intro" id="intro">
-      <h1 class="intro__title">System-design practice with a voice that pushes back.</h1>
-      <p class="intro__lede">
-        A senior engineer asks you one system-design question, then listens.
-        Talk for as long as you need. Interrupt it — it can tell the difference
-        between “mhm” and a real interjection.
-        At the end you get a scored breakdown and the transcript.
-      </p>
+    <!-- ══ Lobby: the device check, before anyone joins ═══════════════ -->
+    <section class="lobby" id="lobby">
+      <div class="lobby__copy">
+        <h1 class="lobby__title">Your interviewer is ready when you are.</h1>
+        <p class="lobby__lede">
+          A senior engineer asks you one system-design question, then listens.
+          Talk for as long as you need. Interrupt — it can tell the difference
+          between “mhm” and a real interjection. At the end you get a scored
+          breakdown and the transcript.
+        </p>
+
+        <div class="lobby__fields">
+          <div class="field">
+            <label class="field__label" for="language">Language</label>
+            <select class="select" id="language">
+              <option value="en">English</option>
+              <option value="hi">हिन्दी / Hindi</option>
+            </select>
+          </div>
+          <div class="field field--grow">
+            <label class="field__label" for="question">Question</label>
+            <select class="select" id="question">
+              <option value="">Random question</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="lobby__actions">
+          <button class="call" id="call" type="button">
+            <svg class="call__icon" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic"/></svg>
+            <span id="call-label">Join the interview</span>
+          </button>
+          <button class="btn btn--quiet" id="load-past" type="button">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-history"/></svg>
+            See a completed run
+          </button>
+        </div>
+        <p class="mic-note" id="mic-note">Your camera and microphone turn on when you join.</p>
+      </div>
+
+      <!-- Self preview: see yourself before anyone else does. -->
+      <div class="preview" id="preview">
+        <video class="preview__video" id="preview-video" autoplay playsinline muted></video>
+        <div class="preview__off" id="preview-off">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-user"/></svg>
+          <span id="preview-off-text">Camera off</span>
+        </div>
+        <div class="preview__bar">
+          <button class="pillbtn" id="pre-mic" type="button" aria-pressed="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic"/></svg>
+            <span>Mic</span>
+          </button>
+          <button class="pillbtn" id="pre-cam" type="button" aria-pressed="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-cam"/></svg>
+            <span>Camera</span>
+          </button>
+          <span class="level" id="level" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
     </section>
 
-    <section class="controlbar" aria-label="Call setup">
-      <div class="field">
-        <label class="field__label" for="language">Language</label>
-        <select class="select" id="language">
-          <option value="en">English</option>
-          <option value="hi">हिन्दी / Hindi</option>
-        </select>
+    <!-- ══ Room: the call itself ═══════════════════════════════════════ -->
+    <section class="room" id="room" hidden>
+      <div class="stage" id="stage">
+        <figure class="tile tile--coach" id="tile-coach">
+          <video class="tile__video" id="coach-video" autoplay playsinline></video>
+          <div class="tile__fallback" id="coach-fallback">
+            <span class="tile__avatar" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><use href="#i-user"/></svg>
+            </span>
+            <span class="tile__note" id="coach-note">Waiting for the coach</span>
+          </div>
+          <figcaption class="tile__caption">
+            <span class="tile__name">Interview Coach</span>
+            <span class="tile__state" id="coach-state">joining</span>
+          </figcaption>
+        </figure>
+
+        <figure class="tile tile--self" id="tile-self">
+          <video class="tile__video tile__video--mirror" id="self-video" autoplay playsinline muted></video>
+          <div class="tile__fallback" id="self-fallback">
+            <span class="tile__avatar" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><use href="#i-user"/></svg>
+            </span>
+          </div>
+          <figcaption class="tile__caption">
+            <span class="tile__name">You</span>
+            <span class="tile__muted" id="self-muted" hidden>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic-off"/></svg>
+            </span>
+          </figcaption>
+        </figure>
       </div>
 
-      <div class="field field--grow">
-        <label class="field__label" for="question">Question</label>
-        <select class="select" id="question">
-          <option value="">Random question</option>
-        </select>
-      </div>
-
-      <div class="controlbar__actions">
-        <button class="call" id="call" type="button">
-          <svg class="call__icon" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic"/></svg>
-          <span id="call-label">Start call</span>
-        </button>
-        <button class="btn btn--ghost" id="mute" type="button" hidden aria-pressed="false">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic-off"/></svg>
-          <span id="mute-label">Mute</span>
-        </button>
-        <span class="timer num" id="timer" hidden>00:00</span>
+      <div class="controls" role="toolbar" aria-label="Call controls">
+        <div class="controls__group">
+          <button class="ctl" id="mute" type="button" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic"/></svg>
+            <span id="mute-label">Mute</span>
+          </button>
+          <button class="ctl" id="cam" type="button" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-cam"/></svg>
+            <span id="cam-label">Stop video</span>
+          </button>
+        </div>
+        <div class="controls__group">
+          <span class="timer num" id="timer">00:00</span>
+          <button class="ctl ctl--end" id="end" type="button">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-end"/></svg>
+            <span>Leave</span>
+          </button>
+        </div>
+        <div class="controls__group">
+          <button class="ctl" id="panel-toggle" type="button" aria-pressed="false" aria-controls="side">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-panel"/></svg>
+            <span>Details</span>
+          </button>
+        </div>
       </div>
     </section>
-
-    <p class="mic-note" id="mic-note">Your microphone turns on when the call starts.</p>
-
-    <div class="secondary-row">
-      <button class="btn btn--quiet" id="load-past" type="button">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-history"/></svg>
-        See a completed run
-      </button>
-      <label class="switch">
-        <input type="checkbox" id="engineer-view" />
-        <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
-        <span class="switch__label">Engineer view</span>
-      </label>
-    </div>
 
     <div id="notices" class="notices" aria-live="polite"></div>
 
-    <!-- ── The two tracks ───────────────────────────────────────────── -->
-    <div class="app-main">
+    <!-- ── Transcript + instruments: a panel during the call, the whole
+             surface after it ─────────────────────────────────────────── -->
+    <div class="app-main" id="side" hidden>
+      <div class="side__head">
+        <span class="secondary-row__note" id="room-note"></span>
+        <label class="switch">
+          <input type="checkbox" id="engineer-view" />
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          <span class="switch__label">Engineer view</span>
+        </label>
+      </div>
 
       <!-- Conversation column -->
       <div class="column">

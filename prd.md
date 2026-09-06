@@ -25,12 +25,43 @@ publishes the numbers that prove it.
 | G5 | Swappable stack | STT / LLM / TTS chosen from `.env`, zero provider names in agent logic |
 | G6 | Known cost | per-session cost computed from real token/character counts, under **$0.18** per 5-minute session |
 | G7 | Bilingual | English + Hindi, selected per session |
+| G8 | Looks like a real interview | a photoreal coach on video, the candidate's camera on, both in one call |
 
 ## 3. Non-goals (v1)
 
 Outbound calling · voice cloning · self-hosted LiveKit · multi-agent handoff.
 Also out: authentication beyond a short-lived room token, mobile-native clients,
 and persistent user accounts.
+
+## 3a. The interview room
+
+v1 shipped voice only. A voice in the dark is not what a system-design
+interview feels like, and the gap matters: candidates rehearse being *watched*
+as much as being heard.
+
+So a session is a two-party video call. A photoreal avatar joins the room as
+its own participant and speaks the coach's lines in lip-sync; the candidate's
+camera is on; both appear as tiles, coach large and candidate inset, with a
+device-check lobby before joining.
+
+**How it works.** `avatar.start(session, room)` runs **before**
+`session.start()`. Starting it rebinds the agent's audio tail to the avatar
+worker over a data stream; the worker then publishes lip-synced video *and*
+audio into the room on the agent's behalf, carrying
+`lk.publish_on_behalf`. The browser subscribes to that participant, not the
+agent. Get the order wrong and the first reply goes out as bare audio.
+
+**Providers are swappable like every other leg** — `AVATAR_MODEL` takes
+`lemonslice` (served by the LiveKit gateway, no second key), `tavus/<replica>`,
+`bey/<avatar>` or `simli`. Plugins import lazily, so a provider you do not use
+is a dependency you do not install.
+
+**Failure degrades to voice, never to silence.** If the avatar does not join
+within `AVATAR_JOIN_TIMEOUT`, the call proceeds with audio only, the client
+shows a voice-only tile, and the session stops billing for video nobody saw.
+
+**Video is optional and it is the expensive half** — `AVATAR_ENABLED=false`
+returns the product to its original cost. See §10.
 
 ## 4. Persona
 
@@ -188,21 +219,37 @@ evidence for G2.
 **Cost** uses `AgentSession.usage` → `AgentSessionUsage` (real tokens,
 characters, audio seconds) against a rate table in `agent/pricing.py`.
 
-**Ceiling: $0.18 per 5-minute session.** The first draft of this PRD said
-$0.12; costing the default stack against the rate table put it at **$0.15**, so
-$0.12 was not reachable and the ceiling moved rather than the arithmetic.
-Modelled breakdown for a coach that mostly listens — 20 turns, prompt caching
-on, ~1,200 characters spoken:
+**Ceiling: $0.85 per 5-minute session with video; $0.18 voice-only.**
 
-| Leg | Sonnet stack | Haiku stack |
-|---|---|---|
-| LLM | $0.0675 | $0.0225 |
-| TTS (cartesia sonic-3) | $0.0288 | $0.0288 |
-| STT (deepgram nova-3) | $0.0385 | $0.0385 |
-| LiveKit transport | $0.0150 | $0.0150 |
-| **Total** | **$0.150** | **$0.105** |
+The ceiling has moved twice, both times because the arithmetic said so. It
+started at $0.12; costing the voice stack put it at **$0.15**, so it went to
+$0.18. Adding the interview room moved it again, and much further — avatar
+video bills per minute of **wall-clock**, not per minute of speech, so it costs
+the same whether the coach talks or listens:
 
-The LLM is the only leg worth optimising: swapping to Haiku alone buys 30%.
+| Leg | Voice only | + lemonslice | + tavus |
+|---|---|---|---|
+| LLM (Sonnet, caching on) | $0.0675 | $0.0675 | $0.0675 |
+| TTS (cartesia sonic-3) | $0.0288 | $0.0288 | $0.0288 |
+| STT (deepgram nova-3) | $0.0385 | $0.0385 | $0.0385 |
+| LiveKit transport | $0.0150 | $0.0150 | $0.0150 |
+| **Avatar video** | — | **$0.500** | **$1.850** |
+| **Total** | **$0.150** | **$0.650** | **$1.985** |
+
+Two things follow, and both are uncomfortable enough to state plainly:
+
+1. **Video is roughly four fifths of a session.** Every voice-side optimisation
+   in this document — prompt caching, a terse persona, Haiku — together saves
+   about $0.04. One minute of avatar video costs three times that. The LLM
+   stopped being the lever the moment video was switched on.
+2. **Tavus cannot fit the ceiling at all.** At $0.37/min a 5-minute session is
+   **$1.99**, more than double $0.85. It is supported because it looks the
+   best; it is not the default, and choosing it is choosing to breach the
+   ceiling knowingly.
+
+`AVATAR_ENABLED=false` returns the product to $0.15 and the original $0.18
+ceiling. That switch, not the model choice, is the real cost decision.
+
 Exceeding the ceiling fails the benchmark run, not the call — a caller is never
 cut off over money.
 
@@ -253,6 +300,7 @@ idempotent. Retention default: **30 days**, enforced by a sweep on worker start.
 | 4 | Tools | all three fire, each with filler speech, no dead air |
 | 5 | Persona + scoring | session end writes a validated JSON score |
 | 6 | SIP inbound | a phone number reaches the agent |
+| 6a | The interview room | avatar on video, candidate's camera on, device-check lobby |
 | 7 | Public demo | link + README with the measured latency table |
 
 ## 15. Acceptance criteria
@@ -261,7 +309,9 @@ idempotent. Retention default: **30 days**, enforced by a sweep on worker start.
 - [ ] 10 scripted backchannels interrupt the agent **0** times
 - [ ] 10 scripted interjections interrupt the agent **10** times
 - [ ] no gap > 800 ms between a tool call starting and audio resuming
-- [ ] 5-minute session cost < $0.18, computed from real usage
+- [ ] 5-minute session cost < $0.85 with video, < $0.18 without, from real usage
+- [ ] the avatar joins within 20 s, or the call proceeds voice-only and says so
+- [ ] the candidate's camera publishes, and can be stopped and restarted mid-call
 - [ ] `.env` swap of TTS provider requires **no** code change
 - [ ] one Hindi session completes with a valid score
 - [ ] `DELETE /api/sessions/{id}` leaves no trace on disk
@@ -293,6 +343,9 @@ between them then rests on data, not preference.
 | Long thinking pauses read as end-of-turn | semantic `TurnDetector` + `max_delay` 2.5 s; measured against a "thinking out loud" script |
 | Preemptive generation inflates LLM spend | `max_speech_duration` 10 s caps attempts; discarded drafts tracked in the cost table |
 | Rate table drifts and the ceiling silently lies | `AS_OF` date in `agent/pricing.py`; the benchmark prints it |
+| Avatar spend runs away — it bills wall-clock, including silence | provider session is explicitly terminated on shutdown; a failed join clears `avatar_model` so nothing bills for video nobody saw |
+| The avatar lands in the uncanny valley and hurts the demo | provider is one `.env` line; `AVATAR_ENABLED=false` is always the fallback |
+| Video adds latency the 800 ms budget does not cover | the avatar sits downstream of TTS, so it moves lip-sync, not time-to-first-audio — but milestone 3 must re-measure with video on before the claim is repeated |
 | Cartesia lacks a good Hindi voice | voice IDs are per-language `.env` values; ElevenLabs configured as the TTS fallback |
 | SIP audio is 8 kHz and hurts STT | benchmark table reports browser and SIP rows separately |
 | Provider outage mid-demo | `FallbackAdapter` on all three legs, exercised by a fault-injection test |

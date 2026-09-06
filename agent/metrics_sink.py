@@ -13,6 +13,7 @@ from typing import Any
 
 from livekit.agents import metrics as lk_metrics
 
+from . import avatar as avatar_mod
 from . import pricing
 
 
@@ -69,8 +70,9 @@ class MetricsSink:
     def __init__(
         self,
         *,
-        cost_ceiling_usd: float = 0.18,
+        cost_ceiling_usd: float = 0.85,
         latency_budget: float = LATENCY_BUDGET_SECONDS,
+        avatar_model: str | None = None,
     ) -> None:
         self.turns: list[TurnMetrics] = []
         self.interruptions = 0
@@ -79,6 +81,8 @@ class MetricsSink:
         # second copy that drifts from the worker's config.
         self.cost_ceiling_usd = cost_ceiling_usd
         self.latency_budget = latency_budget
+        # None when the session is voice-only.
+        self.avatar_model = avatar_model
         self._current: TurnMetrics | None = None
 
     # ---- collection -------------------------------------------------------
@@ -140,7 +144,12 @@ class MetricsSink:
         latencies = self.latencies()
         model_cost = round(sum(t.cost_usd for t in self.turns), 6)
         transport = round(pricing.transport_cost(session_seconds), 6)
-        total_cost = round(model_cost + transport, 6)
+        avatar = (
+            avatar_mod.avatar_cost(self.avatar_model, session_seconds)
+            if self.avatar_model
+            else 0.0
+        )
+        total_cost = round(model_cost + transport + avatar, 6)
         return {
             "turns": len(self.turns),
             "p50_latency": self.percentile(50),
@@ -153,6 +162,8 @@ class MetricsSink:
             "backchannels": self.backchannels,
             "model_cost_usd": model_cost,
             "transport_cost_usd": transport,
+            "avatar_cost_usd": avatar,
+            "avatar_model": self.avatar_model,
             "total_cost_usd": total_cost,
             "cost_ceiling_usd": self.cost_ceiling_usd,
             "over_ceiling": total_cost > self.cost_ceiling_usd,

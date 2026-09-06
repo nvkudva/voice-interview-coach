@@ -49,5 +49,12 @@ def test_missing_session_is_404(client):
 def test_config_exposes_the_budgets_the_client_renders_against(client):
     body = client.get("/api/config").json()
     assert body["latency_budget_seconds"] == 0.8
-    assert body["cost_ceiling_usd"] == 0.18
+    assert body["cost_ceiling_usd"] == 0.85   # raised by avatar video
     assert "hi" in body["languages"]
+
+
+def test_config_tells_the_client_whether_to_expect_video(client):
+    body = client.get("/api/config").json()
+    assert body["avatar_enabled"] is True
+    assert body["camera_enabled"] is True
+    assert body["avatar_model"] == "lemonslice"

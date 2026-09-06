@@ -99,6 +99,11 @@ def client_config() -> dict[str, Any]:
         "default_language": cfg.language,
         "latency_budget_seconds": metrics_sink.LATENCY_BUDGET_SECONDS,
         "cost_ceiling_usd": cfg.cost_ceiling_usd,
+        # The client needs to know whether to hold space for a coach video
+        # tile before anyone joins, so the layout does not jump.
+        "avatar_enabled": cfg.avatar_enabled,
+        "avatar_model": cfg.avatar_model if cfg.avatar_enabled else None,
+        "camera_enabled": cfg.camera_enabled,
     }
 
 

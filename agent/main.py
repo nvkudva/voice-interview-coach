@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 from livekit import agents
 from livekit.agents import AgentSession, JobContext, WorkerOptions, cli
 
+from . import avatar as avatar_mod
 from . import config, questions, scoring, storage
 from .metrics_sink import MetricsSink
 from .persona import InterviewCoach
@@ -75,7 +76,10 @@ async def entrypoint(ctx: JobContext) -> None:
         userdata=userdata,
     )
 
-    sink = MetricsSink(cost_ceiling_usd=cfg.cost_ceiling_usd)
+    sink = MetricsSink(
+        cost_ceiling_usd=cfg.cost_ceiling_usd,
+        avatar_model=cfg.avatar_model if cfg.avatar_enabled else None,
+    )
     started = time.monotonic()
 
     @session.on("metrics_collected")
@@ -128,7 +132,43 @@ async def entrypoint(ctx: JobContext) -> None:
 
     ctx.add_shutdown_callback(_finalize)
 
+    # The avatar must start BEFORE the session: starting it rebinds the agent's
+    # audio tail to the avatar worker, which then publishes lip-synced video and
+    # audio into the room on the agent's behalf. Start it after and the first
+    # reply goes out as bare audio.
+    avatar_running = False
+    if cfg.avatar_enabled:
+        avatar_running = await _start_avatar(ctx, session, cfg, sink)
+
+    storage.merge(session_id, avatar=cfg.avatar_model if avatar_running else None)
+
     await session.start(InterviewCoach(question, language), room=ctx.room)
+
+
+async def _start_avatar(
+    ctx: JobContext,
+    session: AgentSession,
+    cfg: config.SessionConfig,
+    sink: MetricsSink,
+) -> bool:
+    """Bring up the avatar. A failure here degrades to voice, never to silence."""
+    try:
+        avatar = avatar_mod.build_avatar(cfg.avatar_model)
+        await avatar.start(session, room=ctx.room)
+        await avatar.wait_for_join(timeout=cfg.avatar_join_timeout)
+        logger.info("avatar joined: %s", cfg.avatar_model)
+        return True
+    except TimeoutError:
+        logger.warning(
+            "avatar %s did not join within %.0fs; continuing voice-only",
+            cfg.avatar_model, cfg.avatar_join_timeout,
+        )
+    except Exception:
+        logger.warning("avatar %s failed to start; continuing voice-only",
+                       cfg.avatar_model, exc_info=True)
+    # Stop billing for video the candidate never saw.
+    sink.avatar_model = None
+    return False
 
 
 async def _publish_metrics(ctx: JobContext, sink: MetricsSink, started: float) -> None:

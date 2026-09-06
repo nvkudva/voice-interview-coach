@@ -30,9 +30,10 @@ def _five_minute_session(llm_model: str) -> float:
     )
 
 
-def test_default_stack_fits_the_ceiling():
+def test_voice_only_stack_fits_its_own_ceiling():
+    """Voice-only — no avatar video. The room ceiling is set in test_avatar."""
     cost = _five_minute_session("claude-sonnet-4-6")
-    assert cost < 0.18, f"{cost:.4f} breaches the stated $0.18 ceiling"
+    assert cost < 0.18, f"{cost:.4f} breaches the voice-only $0.18 ceiling"
 
 
 def test_the_cheap_stack_is_the_lever_for_a_lower_ceiling():
