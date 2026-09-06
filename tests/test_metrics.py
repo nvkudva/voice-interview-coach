@@ -85,3 +85,29 @@ def test_summary_totals_model_and_transport_cost():
     assert summary["total_cost_usd"] == round(
         summary["model_cost_usd"] + summary["transport_cost_usd"], 6
     )
+
+
+def test_budgets_travel_with_the_numbers():
+    """The client must not carry its own copy of a threshold the worker owns."""
+    sink = MetricsSink(cost_ceiling_usd=0.05)
+    _turn(sink)
+    summary = sink.summary(session_seconds=300)
+    assert summary["cost_ceiling_usd"] == 0.05
+    assert summary["latency_budget_seconds"] == 0.8
+
+
+def test_over_ceiling_is_computed_not_asserted():
+    cheap = MetricsSink(cost_ceiling_usd=10.0)
+    _turn(cheap)
+    assert cheap.summary(session_seconds=300)["over_ceiling"] is False
+
+    strict = MetricsSink(cost_ceiling_usd=0.0001)
+    _turn(strict)
+    assert strict.summary(session_seconds=300)["over_ceiling"] is True
+
+
+def test_over_budget_turns_counts_only_breaches():
+    sink = MetricsSink()
+    _turn(sink, ttft=0.2)      # ~0.64s, inside budget
+    _turn(sink, ttft=1.5)      # ~1.94s, over
+    assert sink.summary()["over_budget_turns"] == 1

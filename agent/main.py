@@ -75,7 +75,7 @@ async def entrypoint(ctx: JobContext) -> None:
         userdata=userdata,
     )
 
-    sink = MetricsSink()
+    sink = MetricsSink(cost_ceiling_usd=cfg.cost_ceiling_usd)
     started = time.monotonic()
 
     @session.on("metrics_collected")
@@ -118,7 +118,7 @@ async def entrypoint(ctx: JobContext) -> None:
             score=score,
             notes_count=len(storage.load(session_id).get("notes", [])),
         )
-        if summary["total_cost_usd"] > cfg.cost_ceiling_usd:
+        if summary["over_ceiling"]:
             logger.warning(
                 "session cost %.4f exceeded ceiling %.4f",
                 summary["total_cost_usd"],

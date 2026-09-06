@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from livekit import api
 from pydantic import BaseModel, Field
 
-from agent import config, questions, storage
+from agent import config, metrics_sink, questions, storage
 
 load_dotenv()
 
@@ -84,6 +84,22 @@ def _metadata(req: TokenRequest) -> str:
     import json
 
     return json.dumps({"language": req.language, "question_id": req.question_id})
+
+
+@app.get("/api/config")
+def client_config() -> dict[str, Any]:
+    """Budgets and options the client renders against.
+
+    The client must never carry its own copy of a threshold the worker owns —
+    two sources of truth drift, and the one on screen is the one people trust.
+    """
+    cfg = config.SessionConfig()
+    return {
+        "languages": list(config.SUPPORTED_LANGUAGES),
+        "default_language": cfg.language,
+        "latency_budget_seconds": metrics_sink.LATENCY_BUDGET_SECONDS,
+        "cost_ceiling_usd": cfg.cost_ceiling_usd,
+    }
 
 
 @app.get("/api/questions")

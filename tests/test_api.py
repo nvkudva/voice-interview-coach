@@ -44,3 +44,10 @@ def test_delete_is_idempotent(client):
 
 def test_missing_session_is_404(client):
     assert client.get("/api/sessions/nope").status_code == 404
+
+
+def test_config_exposes_the_budgets_the_client_renders_against(client):
+    body = client.get("/api/config").json()
+    assert body["latency_budget_seconds"] == 0.8
+    assert body["cost_ceiling_usd"] == 0.18
+    assert "hi" in body["languages"]

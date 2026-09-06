@@ -59,13 +59,26 @@ class TurnMetrics:
         return data
 
 
+LATENCY_BUDGET_SECONDS = 0.8
+"""End of speech to first agent audio, p95. See prd.md §7."""
+
+
 class MetricsSink:
     """Collects per-turn rows. Attach with ``session.on("metrics_collected", sink)``."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        cost_ceiling_usd: float = 0.18,
+        latency_budget: float = LATENCY_BUDGET_SECONDS,
+    ) -> None:
         self.turns: list[TurnMetrics] = []
         self.interruptions = 0
         self.backchannels = 0
+        # Budgets travel with the numbers so the client never hardcodes a
+        # second copy that drifts from the worker's config.
+        self.cost_ceiling_usd = cost_ceiling_usd
+        self.latency_budget = latency_budget
         self._current: TurnMetrics | None = None
 
     # ---- collection -------------------------------------------------------
@@ -127,6 +140,7 @@ class MetricsSink:
         latencies = self.latencies()
         model_cost = round(sum(t.cost_usd for t in self.turns), 6)
         transport = round(pricing.transport_cost(session_seconds), 6)
+        total_cost = round(model_cost + transport, 6)
         return {
             "turns": len(self.turns),
             "p50_latency": self.percentile(50),
@@ -139,7 +153,11 @@ class MetricsSink:
             "backchannels": self.backchannels,
             "model_cost_usd": model_cost,
             "transport_cost_usd": transport,
-            "total_cost_usd": round(model_cost + transport, 6),
+            "total_cost_usd": total_cost,
+            "cost_ceiling_usd": self.cost_ceiling_usd,
+            "over_ceiling": total_cost > self.cost_ceiling_usd,
+            "latency_budget_seconds": self.latency_budget,
+            "over_budget_turns": sum(1 for v in latencies if v > self.latency_budget),
         }
 
     def rows(self) -> list[dict[str, Any]]:
