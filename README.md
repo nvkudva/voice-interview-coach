@@ -93,21 +93,47 @@ Plus the one default that will cost you 350 ms if you leave it alone: silero's
 model decide when the turn ends, not the energy detector.
 [`docs/tuning.md`](docs/tuning.md) has the rest.
 
+## The interface
+
+One page, two audiences, split by time rather than space. **During a call the
+candidate owns the screen** — a status pill, the transcript, and three plain
+chips. **After it the engineer does**: `Engineer view` (sticky, and
+deep-linkable as `?view=engineer`) reveals the per-turn table, the p95, and the
+cost line. `See a completed run` loads a stored session, so an evaluator can
+read the numbers without talking to it.
+
+Two ideas carry the visual identity:
+
+- **The waveline is the app bar's rule.** There is no `border-bottom` — a
+  hairline sits in its place and *is* the voice indicator: flat when idle, a
+  one-pixel breath when the mic is open, a constant-rate travelling segment
+  while thinking, a real waveform from the output analyser while speaking. It
+  costs no layout and can be read peripherally while you talk.
+- **The turn spine.** Transcript and metrics are one ledger indexed by the same
+  mono turn number; hovering either side highlights the other. Density becomes
+  navigation instead of a spreadsheet parked beside a chat.
+
+Both themes follow the OS with an explicit toggle. Every over-budget value is
+marked four ways — caret, weight, underline, and a bar that overshoots its tick
+— so the page survives greyscale. Full specs in
+[`docs/design-system.md`](docs/design-system.md) and
+[`docs/ux-spec.md`](docs/ux-spec.md).
+
 ## Layout
 
 ```
 agent/      worker, persona, tools, scoring, metrics, pricing
-api/        token server, session read + delete
+api/        token server, config, session read + delete
 web/        browser client and metrics dashboard
 bench/      latency table generator and CI gate
 sip/        inbound trunk + dispatch rule
-docs/       tuning, cost, decisions
+docs/       design system, UX spec, tuning, cost, decisions
 ```
 
 ## Milestones
 
 - [ ] 1 · Console agent, one full turn (code in place, unverified against a live call)
-- [ ] 2 · Browser client deployed
+- [x] 2 · Browser client built (deploy pending)
 - [ ] 3 · Latency tuned, p95 under 800 ms over 20 turns
 - [ ] 4 · Three tools with filler speech
 - [ ] 5 · Coach persona and JSON scoring

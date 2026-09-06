@@ -1,65 +1,269 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-voice="idle" data-density="dense">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
   <title>Interview Coach</title>
+  <meta name="description" content="System-design practice with a voice that pushes back." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <main>
-    <header>
-      <h1>Interview Coach</h1>
-      <p class="sub">System-design practice. Talk over it — it can tell the difference.</p>
-    </header>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-    <section class="controls">
-      <label>Language
-        <select id="language">
+  <!-- Sprite: every icon in the system. Stroke 1.5, 16px grid. -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <g id="i-mic"><path d="M8 1.75a2 2 0 0 1 2 2v4.5a2 2 0 1 1-4 0v-4.5a2 2 0 0 1 2-2Z"/><path d="M3.25 7.5a4.75 4.75 0 0 0 9.5 0M8 12.25v2"/></g>
+      <g id="i-mic-off"><path d="M10 3.75a2 2 0 0 0-4 0v1M6 7v1.25a2 2 0 0 0 3.4 1.43"/><path d="M3.25 7.5a4.75 4.75 0 0 0 7.06 4.15M12.75 7.5v.4M8 12.25v2"/><path d="M2 2l12 12"/></g>
+      <g id="i-end"><path d="M2.6 9.2a11 11 0 0 1 10.8 0"/><path d="M4.9 8.2 4 10.6a1 1 0 0 1-1.3.6l-1-.4a1 1 0 0 1-.5-1.3l.4-.8M11.1 8.2l.9 2.4a1 1 0 0 0 1.3.6l1-.4a1 1 0 0 0 .5-1.3l-.4-.8"/></g>
+      <g id="i-sun"><circle cx="8" cy="8" r="3.1"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2 3.1 3.1"/></g>
+      <g id="i-moon"><path d="M13.2 9.6A5.6 5.6 0 0 1 6.4 2.8a5.75 5.75 0 1 0 6.8 6.8Z"/></g>
+      <g id="i-gauge"><path d="M2.5 12a6.2 6.2 0 1 1 11 0"/><path d="m8 9 2.6-2.6"/><circle cx="8" cy="9.4" r=".9" fill="currentColor" stroke="none"/></g>
+      <g id="i-chevron"><path d="m6 3.5 4.5 4.5L6 12.5"/></g>
+      <g id="i-caret-up"><path d="M8 4.5 13 11.5H3z" fill="currentColor" stroke="none"/></g>
+      <g id="i-trash"><path d="M2.75 4.25h10.5M6.25 4.25V3a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v1.25"/><path d="M12 4.25 11.5 13a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1L4 4.25"/></g>
+      <g id="i-search"><circle cx="7.2" cy="7.2" r="4.45"/><path d="m10.5 10.5 2.75 2.75"/></g>
+      <g id="i-copy"><rect x="5.25" y="5.25" width="8" height="8" rx="1.5"/><path d="M10.75 5.25v-1.5a1.5 1.5 0 0 0-1.5-1.5h-5a1.5 1.5 0 0 0-1.5 1.5v5a1.5 1.5 0 0 0 1.5 1.5h1.5"/></g>
+      <g id="i-alert"><path d="M8 2.6 14.4 13H1.6z"/><path d="M8 6.4v3M8 11.3v.1"/></g>
+      <g id="i-history"><path d="M2.9 8a5.1 5.1 0 1 0 1.6-3.7L2.6 6.1"/><path d="M2.5 3v3.2h3.2M8 5.3V8l2 1.4"/></g>
+      <g id="i-wordmark"><path d="M2 8h1.6M6 3.6v8.8M9.4 5.6v4.8M12.8 8h1.6" stroke-linecap="round"/></g>
+    </defs>
+  </svg>
+
+  <header class="appbar" id="appbar">
+    <div class="appbar__inner container">
+      <a class="wordmark" href="/">
+        <svg class="wordmark__mark" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-wordmark"/></svg>
+        <span>Interview Coach</span>
+      </a>
+
+      <div class="appbar__right">
+        <output class="pill" id="pill" role="status" aria-live="polite" aria-atomic="true">
+          <svg class="pill__glyph" viewBox="0 0 12 12" aria-hidden="true"><g id="pill-glyph"></g></svg>
+          <span class="pill__text" id="pill-text">Ready</span>
+        </output>
+
+        <button class="icon-btn" id="density-toggle" type="button"
+                aria-pressed="false" title="Comfortable rows">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-gauge"/></svg>
+          <span class="sr-only">Toggle row density</span>
+        </button>
+
+        <button class="icon-btn" id="theme-toggle" type="button" title="Theme">
+          <svg class="theme-icon theme-icon--sun" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="theme-icon theme-icon--moon" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-moon"/></svg>
+          <span class="sr-only">Switch theme</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Idea 1: the waveline IS the app bar's rule. Never a border-bottom. -->
+    <svg class="waveline" id="waveline" viewBox="0 0 1200 48" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="carrier-grad" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0"    stop-color="var(--voice-current)" stop-opacity="0"/>
+          <stop offset="0.5"  stop-color="var(--voice-current)" stop-opacity="1"/>
+          <stop offset="1"    stop-color="var(--voice-current)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <polyline class="waveline__path" id="waveline-path" points="" fill="none"
+                stroke="var(--voice-current)" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round"
+                vector-effect="non-scaling-stroke"/>
+      <rect class="waveline__carrier" id="waveline-carrier" x="0" y="23" width="120" height="2"
+            fill="url(#carrier-grad)"/>
+      <circle class="waveline__origin" id="waveline-origin" cx="600" cy="24" r="3"
+              fill="none" stroke="var(--voice-current)" stroke-width="1"
+              vector-effect="non-scaling-stroke"/>
+      <g id="waveline-marks"></g>
+    </svg>
+  </header>
+
+  <main id="main" class="container">
+
+    <!-- ── Pre-call ─────────────────────────────────────────────────── -->
+    <section class="intro" id="intro">
+      <h1 class="intro__title">System-design practice with a voice that pushes back.</h1>
+      <p class="intro__lede">
+        A senior engineer asks you one system-design question, then listens.
+        Talk for as long as you need. Interrupt it — it can tell the difference
+        between “mhm” and a real interjection.
+        At the end you get a scored breakdown and the transcript.
+      </p>
+    </section>
+
+    <section class="controlbar" aria-label="Call setup">
+      <div class="field">
+        <label class="field__label" for="language">Language</label>
+        <select class="select" id="language">
           <option value="en">English</option>
           <option value="hi">हिन्दी / Hindi</option>
         </select>
-      </label>
-      <label>Question
-        <select id="question"><option value="">Random</option></select>
-      </label>
-      <button id="call" class="primary">Start call</button>
-      <span id="state" class="state idle">idle</span>
-    </section>
-
-    <section class="grid">
-      <div class="panel">
-        <h2>Transcript</h2>
-        <div id="transcript" class="transcript"></div>
       </div>
 
-      <div class="panel">
-        <h2>Latency</h2>
-        <div class="tiles">
-          <div class="tile"><span id="m-p95">—</span><label>p95 e2e</label></div>
-          <div class="tile"><span id="m-p50">—</span><label>p50 e2e</label></div>
-          <div class="tile"><span id="m-ttft">—</span><label>LLM TTFT</label></div>
-          <div class="tile"><span id="m-ttfb">—</span><label>TTS TTFB</label></div>
-          <div class="tile"><span id="m-int">—</span><label>interruptions</label></div>
-          <div class="tile"><span id="m-bc">—</span><label>backchannels</label></div>
-          <div class="tile"><span id="m-cost">—</span><label>cost</label></div>
-        </div>
-        <div class="scroll">
-          <table id="turns">
-            <thead><tr>
-              <th>#</th><th>EOU</th><th>STT</th><th>LLM TTFT</th><th>TTS TTFB</th><th>e2e</th><th>$</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
+      <div class="field field--grow">
+        <label class="field__label" for="question">Question</label>
+        <select class="select" id="question">
+          <option value="">Random question</option>
+        </select>
+      </div>
+
+      <div class="controlbar__actions">
+        <button class="call" id="call" type="button">
+          <svg class="call__icon" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic"/></svg>
+          <span id="call-label">Start call</span>
+        </button>
+        <button class="btn btn--ghost" id="mute" type="button" hidden aria-pressed="false">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-mic-off"/></svg>
+          <span id="mute-label">Mute</span>
+        </button>
+        <span class="timer num" id="timer" hidden>00:00</span>
       </div>
     </section>
 
-    <footer>
-      <span id="session-id"></span>
-      <button id="erase" class="danger" hidden>Delete this session</button>
+    <p class="mic-note" id="mic-note">Your microphone turns on when the call starts.</p>
+
+    <div class="secondary-row">
+      <button class="btn btn--quiet" id="load-past" type="button">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-history"/></svg>
+        See a completed run
+      </button>
+      <label class="switch">
+        <input type="checkbox" id="engineer-view" />
+        <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+        <span class="switch__label">Engineer view</span>
+      </label>
+    </div>
+
+    <div id="notices" class="notices" aria-live="polite"></div>
+
+    <!-- ── The two tracks ───────────────────────────────────────────── -->
+    <div class="app-main">
+
+      <!-- Conversation column -->
+      <div class="column">
+        <section class="panel panel--transcript" aria-labelledby="transcript-h">
+          <div class="panel__head">
+            <h2 class="panel__title" id="transcript-h">Transcript</h2>
+            <button class="btn btn--quiet btn--sm" id="copy-transcript" type="button">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-copy"/></svg>
+              Copy transcript
+            </button>
+          </div>
+
+          <div class="transcript-wrap" id="transcript-wrap">
+            <p class="empty" id="transcript-empty">
+              The coach speaks first. Your answer appears here as you talk.
+            </p>
+            <ol class="transcript" id="transcript" role="log" aria-live="polite"
+                aria-relevant="additions" aria-label="Conversation transcript"></ol>
+          </div>
+        </section>
+
+        <section class="panel score-card" id="score-card" hidden aria-labelledby="score-h"></section>
+      </div>
+
+      <!-- Instrument rail -->
+      <aside class="rail" id="rail" aria-labelledby="rail-h">
+        <div class="rail__head">
+          <h2 class="panel__title" id="rail-h">Session</h2>
+          <span class="rail__note" id="rail-note">Live</span>
+        </div>
+
+        <!-- Candidate-facing: three chips. Always visible. -->
+        <div class="chips" id="chips">
+          <div class="chip" data-status="empty">
+            <span class="chip__label">Reply gap</span>
+            <span class="chip__value num" id="chip-gap">—</span>
+            <span class="chip__hint" id="chip-gap-hint">Target under 800 ms</span>
+          </div>
+          <div class="chip" data-status="empty">
+            <span class="chip__label">Turn-taking</span>
+            <span class="chip__value num" id="chip-turns">—</span>
+            <span class="chip__hint" id="chip-turns-hint">Interruptions and backchannels</span>
+          </div>
+          <div class="chip" data-status="empty">
+            <span class="chip__label">Cost</span>
+            <span class="chip__value num" id="chip-cost">—</span>
+            <span class="chip__hint" id="chip-cost-hint">Model and transport spend</span>
+          </div>
+        </div>
+
+        <!-- Engineer-facing: everything else. -->
+        <div class="eng" id="eng" hidden>
+          <div class="tile-grid" id="tiles">
+            <div class="tile" data-status="empty"><span class="tile__label">p95 e2e</span><span class="tile__value num" id="t-p95">—</span></div>
+            <div class="tile" data-status="empty"><span class="tile__label">p50 e2e</span><span class="tile__value num" id="t-p50">—</span></div>
+            <div class="tile" data-status="empty"><span class="tile__label">LLM TTFT</span><span class="tile__value num" id="t-ttft">—</span></div>
+            <div class="tile" data-status="empty"><span class="tile__label">TTS TTFB</span><span class="tile__value num" id="t-ttfb">—</span></div>
+            <div class="tile" data-status="empty"><span class="tile__label">EOU delay</span><span class="tile__value num" id="t-eou">—</span></div>
+            <div class="tile" data-status="empty"><span class="tile__label">Turns</span><span class="tile__value num" id="t-turns">—</span></div>
+          </div>
+
+          <div class="panel__head panel__head--sub">
+            <h3 class="panel__title panel__title--sm">Per turn</h3>
+            <button class="btn btn--quiet btn--sm" id="copy-csv" type="button">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-copy"/></svg>
+              Copy as CSV
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="metrics-table" id="turns-table">
+              <caption class="sr-only">Per-turn latency and cost</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="col-turn">#</th>
+                  <th scope="col">EOU ms</th>
+                  <th scope="col">STT ms</th>
+                  <th scope="col">TTFT ms</th>
+                  <th scope="col">TTFB ms</th>
+                  <th scope="col">e2e ms</th>
+                  <th scope="col">Cost $</th>
+                </tr>
+              </thead>
+              <tbody id="turns-body">
+                <tr class="table-empty"><td colspan="7">One row per turn, from the first answer onward.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="footer">
+      <span class="footer__id num" id="session-id">No session yet</span>
+      <div class="footer__actions">
+        <span class="footer__note">Prices as of 2026-09-05</span>
+        <button class="btn btn--danger btn--sm" id="erase" type="button" hidden>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-trash"/></svg>
+          Delete this session
+        </button>
+      </div>
     </footer>
+
+    <p class="privacy">
+      No name, no email, no account. The transcript, the score and the numbers are
+      stored against a random session id, deleted after 30 days, and you can erase
+      them now with one button.
+    </p>
   </main>
+
+  <dialog class="modal" id="confirm-delete">
+    <h2 class="modal__title">Delete this session</h2>
+    <p class="modal__body">
+      The transcript, the score and the numbers are removed from the server.
+      This cannot be undone.
+    </p>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" id="cancel-delete" type="button">Keep it</button>
+      <button class="btn btn--danger" id="confirm-delete-btn" type="button">Delete</button>
+    </div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.2/dist/livekit-client.umd.min.js"></script>
   <script src="/app.js"></script>
