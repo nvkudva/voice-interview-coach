@@ -10,3 +10,7 @@ data/sessions/
 .ruff_cache/
 dist/
 build/
+
+# Generated design canvas bundle (~2.5MB editor payload).
+# Regenerate from the artboards: node design-canvas/artboards.mjs, then seed.
+design-canvas/interview-coach-ui.html

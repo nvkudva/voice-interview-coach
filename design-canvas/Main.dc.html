@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin:0; font-family:'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+    a { color:#45C2B9; } a:hover { color:#45C2B9; opacity:.8; }
+    * { box-sizing:border-box; }
+    .num { font-variant-numeric:tabular-nums slashed-zero; font-feature-settings:"tnum" 1,"zero" 1; }
+    
+  </style>
+</helmet>
+<div style="width:1440px;min-height:900px;background:#121110;color:#F3F1ED;display:flex;flex-direction:column">
+  <div style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:#121110">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg width="18" height="18" viewBox="0 0 16 16" style="color:#E08A55">
+        <path d="M2 8h1.6M6 3.6v8.8M9.4 5.6v4.8M12.8 8h1.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span style="font:600 .9375rem/1.375rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.006em;color:#F3F1ED">Interview Coach</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px 0 8px;min-width:11ch;border:1px solid #E08A55;border-radius:999px;background:#2D1B10;font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#E08A55;color:#E08A55">
+    <svg width="12" height="12" viewBox="0 0 12 12" style="flex:none"><circle cx="4" cy="6" r="2" fill="currentColor"/><path d="M7.6 3.6a3.4 3.4 0 0 1 0 4.8M9.6 2.2a5.4 5.4 0 0 1 0 7.6" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em">SPEAKING</span>
+  </span>
+      <span style="width:32px;height:32px;display:grid;place-items:center;color:#948D83">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 12a6.2 6.2 0 1 1 11 0"/><path d="m8 9 2.6-2.6"/><circle cx="8" cy="9.4" r=".9" fill="currentColor" stroke="none"/></svg>
+      </span>
+      <span style="width:32px;height:32px;display:grid;place-items:center;color:#948D83">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M13.2 9.6A5.6 5.6 0 0 1 6.4 2.8a5.75 5.75 0 1 0 6.8 6.8Z"/></svg>
+      </span>
+    </div>
+  </div>
+  <svg width="1440" height="48" viewBox="0 0 1440 48" style="display:block;margin-top:-24px;position:relative;overflow:visible">
+    
+    <polyline points="0.0,24.00 15.2,24.00 30.3,24.03 45.5,24.07 60.6,24.11 75.8,24.09 90.9,23.95 106.1,23.69 121.3,23.39 136.4,23.19 151.6,23.27 166.7,23.71 181.9,24.47 197.1,25.32 212.2,25.94 227.4,26.02 242.5,25.41 257.7,24.19 272.8,22.74 288.0,21.55 303.2,21.05 318.3,21.46 333.5,22.66 348.6,24.25 363.8,25.68 378.9,26.51 394.1,26.51 409.3,25.78 424.4,24.65 439.6,23.54 454.7,22.80 469.9,22.57 485.1,22.80 500.2,23.29 515.4,23.86 530.5,24.35 545.7,24.70 560.8,24.90 576.0,24.90 591.2,24.61 606.3,23.99 621.5,23.07 636.6,22.09 651.8,21.44 666.9,21.55 682.1,22.66 697.3,24.69 712.4,27.10 727.6,29.06 742.7,29.70 757.9,28.49 773.1,25.54 788.2,21.63 803.4,18.01 818.5,15.95 833.7,16.29 848.8,19.05 864.0,23.43 879.2,28.02 894.3,31.35 909.5,32.38 924.6,30.87 939.8,27.44 954.9,23.32 970.1,19.83 985.3,17.99 1000.4,18.15 1015.6,19.95 1030.7,22.57 1045.9,25.07 1061.1,26.70 1076.2,27.16 1091.4,26.60 1106.5,25.47 1121.7,24.27 1136.8,23.39 1152.0,23.00 1167.2,23.05 1182.3,23.36 1197.5,23.72 1212.6,24.01 1227.8,24.16 1242.9,24.20 1258.1,24.16 1273.3,24.10 1288.4,24.04 1303.6,23.98 1318.7,23.94 1333.9,23.93 1349.1,23.94 1364.2,23.96 1379.4,23.99 1394.5,24.01 1409.7,24.01 1424.8,24.00 1440.0,24.00" fill="none" stroke="#E08A55" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div style="padding:32px 32px 40px;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start;margin-top:24px">
+    <div style="display:grid;gap:16px;min-width:0">
+      <div style="display:flex;align-items:center;gap:16px">
+        <span style="display:inline-flex;align-items:center;gap:12px;height:48px;padding:0 24px;border-radius:5px;border-left:3px solid #E08A55;background:#F0736A;color:#FFFFFF;font:500 .875rem/1.25rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
+     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+       <path d="M2.6 9.2a11 11 0 0 1 10.8 0"/><path d="M4.9 8.2 4 10.6a1 1 0 0 1-1.3.6l-1-.4a1 1 0 0 1-.5-1.3l.4-.8M11.1 8.2l.9 2.4a1 1 0 0 0 1.3.6l1-.4a1 1 0 0 0 .5-1.3l-.4-.8"/>
+     </svg>End call</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:5px;font:500 .875rem/1.25rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:transparent;color:#B2ABA2;border:1px solid transparent"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3.75a2 2 0 0 0-4 0v1M6 7v1.25a2 2 0 0 0 3.4 1.43"/><path d="M3.25 7.5a4.75 4.75 0 0 0 7.06 4.15M8 12.25v2"/><path d="M2 2l12 12"/></svg> Mute</span>
+        <span class="num" style="font:500 .875rem/1.25rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#B2ABA2">04:12</span>
+      </div>
+      <section style="background:#1A1918;border:1px solid #383533;border-radius:8px;min-width:0">
+     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #2A2826">
+       <h2 style="margin:0;font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Transcript</h2><span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Q · URL SHORTENER</span>
+     </div>
+     <div style="padding:20px 20px 20px 44px"><ol style="display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none">
+    <li style="position:relative;align-self:end;max-width:62ch;padding:10px 14px;border-radius:8px;background:#0C2827;border:1px solid transparent;border-right:2px solid #45C2B9;border-top-right-radius:2px">
+    
+    <p style="display:flex;align-items:baseline;gap:8px;margin:0 0 4px">
+      <span style="font:600 .625rem/.75rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#948D83">01</span>
+      <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">You</span>
+    </p>
+    <p style="margin:0;font:400 .9375rem/1.5rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#F3F1ED;overflow-wrap:anywhere">LRU, and at a hundred to one skew I would expect ninety-five percent on a working set of the top million codes.</p>
+    
+  </li>
+    <li style="position:relative;align-self:start;max-width:62ch;padding:10px 14px;border-radius:8px;background:#1A1918;border:1px solid #2A2826;border-left:2px solid #E08A55;border-top-left-radius:2px">
+    
+    <p style="display:flex;align-items:baseline;gap:8px;margin:0 0 4px">
+      <span style="font:600 .625rem/.75rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#948D83">01</span>
+      <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Coach</span>
+    </p>
+    <p style="margin:0;font:400 .9375rem/1.5rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#F3F1ED;overflow-wrap:anywhere">Better. Now size the database for a year of writes — and tell me what breaks when the cache is cold.</p>
+    
+  </li>
+    <li style="position:relative;align-self:end;max-width:62ch;padding:10px 14px;border-radius:8px;background:#0C2827;border:1px solid transparent;border-right:2px solid #45C2B9;border-top-right-radius:2px">
+    
+    <p style="display:flex;align-items:baseline;gap:8px;margin:0 0 4px">
+      <span style="font:600 .625rem/.75rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#948D83">02</span>
+      <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">You</span>
+    </p>
+    <p style="margin:0;font:400 .9375rem/1.5rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#F3F1ED;overflow-wrap:anywhere">A hundred writes a second is about three billion a year. At forty bytes a row that's a hundred and twenty gigabytes.</p>
+    
+  </li>
+    <li style="display:flex;align-items:center;gap:10px;margin:2px 0">
+    <span style="flex:1;height:1px;background:#2A2826"></span>
+    <span style="display:inline-flex;align-items:center;gap:6px;font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7.2" cy="7.2" r="4.45"/><path d="m10.5 10.5 2.75 2.75"/></svg>
+      TOOL · lookup_concept · 380 MS</span>
+    <span style="flex:1;height:1px;background:#2A2826"></span>
+  </li>
+    <li style="position:relative;align-self:start;max-width:62ch;padding:10px 14px;border-radius:8px;background:#1A1918;border:1px solid #2A2826;border-left:2px dashed #F0A07A;border-top-left-radius:2px">
+    
+    <p style="display:flex;align-items:baseline;gap:8px;margin:0 0 4px">
+      <span style="font:600 .625rem/.75rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#948D83">02</span>
+      <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Coach</span>
+    </p>
+    <p style="margin:0;font:400 .9375rem/1.5rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#F3F1ED;overflow-wrap:anywhere">That's the number I wanted. One more: consistent hashing buys you<span style="display:inline-block;width:2px;height:14px;margin-left:4px;vertical-align:text-bottom;background:#F0A07A"></span></p>
+    <div style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#F0A07A">
+         <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1v10" stroke="#F0A07A" stroke-width="2"/></svg>
+         INTERRUPTED · 0.42 S IN</div>
+  </li>
+    <li style="position:relative;align-self:end;max-width:62ch;padding:10px 14px;border-radius:8px;background:#0C2827;border:1px solid transparent;border-right:2px solid #45C2B9;border-top-right-radius:2px">
+    
+    <p style="display:flex;align-items:baseline;gap:8px;margin:0 0 4px">
+      <span style="font:600 .625rem/.75rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#948D83">03</span>
+      <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">You</span>
+    </p>
+    <p style="margin:0;font:400 .9375rem/1.5rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#F3F1ED;overflow-wrap:anywhere">Wait — before that, does the write path go through the same cache?</p>
+    
+  </li>
+    <li style="position:relative;align-self:start;max-width:62ch;padding:10px 14px;border-radius:8px;background:#1A1918;border:1px solid #2A2826;border-left:2px solid #E08A55;border-top-left-radius:2px">
+    <span title="backchannel — did not interrupt" style="position:absolute;left:-22px;top:14px;width:8px;height:8px;border:1px solid #45C2B9;border-radius:999px"></span>
+    <p style="display:flex;align-items:baseline;gap:8px;margin:0 0 4px">
+      <span style="font:600 .625rem/.75rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#948D83">03</span>
+      <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Coach</span>
+    </p>
+    <p style="margin:0;font:400 .9375rem/1.5rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#B2ABA2;overflow-wrap:anywhere">Good interruption. No, and that asymmetry is exactly where<span style="display:inline-block;width:2px;height:1em;margin-left:2px;vertical-align:text-bottom;background:#E08A55"></span></p>
+    
+  </li>
+  </ol></div>
+   </section>
+    </div>
+    <aside style="display:grid;gap:16px;min-width:0">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <h2 style="margin:0;font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Session</h2>
+        <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Live</span>
+      </div>
+      
+    <div style="display:grid;grid-template-columns:repeat(1,1fr);gap:1px;background:#2A2826;border:1px solid #383533;border-radius:8px;overflow:hidden"><div style="background:#1A1918;padding:12px 16px;display:grid;gap:4px">
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Reply gap</span>
+    <span class="num" style="font:500 1.375rem/1.625rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#E0A93E;font-weight:600;box-shadow:inset 0 -2px 0 0 #E0A93E"><span style="font-size:.7em">▲ </span>832 ms</span>
+    <span style="font:500 .75rem/1rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#B2ABA2;text-wrap:pretty">p95 over 12 turns so far. Target under 800 ms</span>
+  </div><div style="background:#1A1918;padding:12px 16px;display:grid;gap:4px">
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Turn-taking</span>
+    <span class="num" style="font:500 1.375rem/1.625rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#F3F1ED;">3 / 9</span>
+    <span style="font:500 .75rem/1rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#B2ABA2;text-wrap:pretty">You interrupted 3 times and the coach stopped. You backchannelled 9 times and it kept going.</span>
+  </div><div style="background:#1A1918;padding:12px 16px;display:grid;gap:4px">
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Cost</span>
+    <span class="num" style="font:500 1.375rem/1.625rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#F3F1ED;">$0.1032</span>
+    <span style="font:500 .75rem/1rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#B2ABA2;text-wrap:pretty">Model and transport spend. Target under $0.18</span>
+  </div></div>
+    <div style="background:#1A1918;border:1px solid #383533;border-radius:8px;padding:14px 16px 18px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+      <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">Turn ribbon</span>
+      <span style="font:600 .625rem/.75rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#948D83">12 TURNS</span>
+    </div>
+    <div style="position:relative">
+      <span style="position:absolute;left:0;right:0;top:10px;height:1px;background:#524E4A;opacity:.6"></span>
+      <div style="display:flex;gap:3px;align-items:flex-end"><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:18px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      </span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:17px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      <span style="position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border:1px solid #45C2B9;border-radius:999px;transform:translateX(-50%)"></span></span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:17px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      <span style="position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border:1px solid #45C2B9;border-radius:999px;transform:translateX(-50%)"></span></span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      <span style="position:absolute;left:50%;top:-5px;width:2px;height:6px;background:#F0A07A;transform:translateX(-50%)"></span>
+      <span style="width:100%;height:20px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      </span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:21px;background:#E0A93E;opacity:1;border-radius:1px"></span>
+      <span style="position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border:1px solid #45C2B9;border-radius:999px;transform:translateX(-50%)"></span></span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:18px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      <span style="position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border:1px solid #45C2B9;border-radius:999px;transform:translateX(-50%)"></span></span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:19px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      </span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      <span style="position:absolute;left:50%;top:-5px;width:2px;height:6px;background:#F0A07A;transform:translateX(-50%)"></span>
+      <span style="width:100%;height:30px;background:#E0A93E;opacity:1;border-radius:1px"></span>
+      </span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:20px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      <span style="position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border:1px solid #45C2B9;border-radius:999px;transform:translateX(-50%)"></span></span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      <span style="position:absolute;left:50%;top:-5px;width:2px;height:6px;background:#F0A07A;transform:translateX(-50%)"></span>
+      <span style="width:100%;height:21px;background:#E0A93E;opacity:1;border-radius:1px"></span>
+      </span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:20px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      <span style="position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border:1px solid #45C2B9;border-radius:999px;transform:translateX(-50%)"></span></span><span style="position:relative;flex:1;display:flex;align-items:flex-end;height:30px">
+      
+      <span style="width:100%;height:19px;background:#45C2B9;opacity:0.55;border-radius:1px"></span>
+      </span></div>
+    </div>
+    <p style="margin:14px 0 0;font:500 .75rem/1rem 'IBM Plex Sans','Noto Sans Devanagari',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#B2ABA2">Each bar is one turn. The line is the 800 ms budget; a notch above is an interruption, a circle below a backchannel it correctly ignored.</p>
+  </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:#2A2826;border:1px solid #383533;border-radius:8px;overflow:hidden"><div style="background:#1A1918;padding:12px 16px;display:grid;gap:4px">
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">p95 e2e</span>
+    <span class="num" style="font:500 1.375rem/1.625rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#E0A93E;font-weight:600;box-shadow:inset 0 -2px 0 0 #E0A93E"><span style="font-size:.7em">▲ </span>832 ms</span>
+    <svg width="108" height="22" viewBox="0 0 108 22" style="margin-top:2px;overflow:visible">
+    <line x1="0" y1="9.5" x2="108" y2="9.5" stroke="#524E4A" stroke-width="1" stroke-dasharray="2 3"/>
+    <polyline points="0.0,10.8 9.8,11.2 19.6,11.3 29.5,9.5 39.3,9.0 49.1,10.6 58.9,10.3 68.7,2.4 78.5,9.6 88.4,9.0 98.2,9.6 108.0,10.0" fill="none" stroke="#524E4A" stroke-width="1.25" stroke-linejoin="round"/>
+  </svg>
+  </div><div style="background:#1A1918;padding:12px 16px;display:grid;gap:4px">
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">p50 e2e</span>
+    <span class="num" style="font:500 1.375rem/1.625rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#F3F1ED;">766 ms</span>
+    <svg width="108" height="22" viewBox="0 0 108 22" style="margin-top:2px;overflow:visible">
+    <line x1="0" y1="9.5" x2="108" y2="9.5" stroke="#524E4A" stroke-width="1" stroke-dasharray="2 3"/>
+    <polyline points="0.0,10.8 9.8,11.2 19.6,11.3 29.5,9.5 39.3,9.0 49.1,10.6 58.9,10.3 68.7,2.4 78.5,9.6 88.4,9.0 98.2,9.6 108.0,10.0" fill="none" stroke="#524E4A" stroke-width="1.25" stroke-linejoin="round"/>
+  </svg>
+  </div><div style="background:#1A1918;padding:12px 16px;display:grid;gap:4px">
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">LLM TTFT</span>
+    <span class="num" style="font:500 1.375rem/1.625rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#F3F1ED;">261 ms</span>
+    
+  </div><div style="background:#1A1918;padding:12px 16px;display:grid;gap:4px">
+    <span style="font:600 .6875rem/.875rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.09em;text-transform:uppercase;color:#948D83">TTS TTFB</span>
+    <span class="num" style="font:500 1.375rem/1.625rem 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#F3F1ED;">113 ms</span>
+    
+  </div></div>
+    </aside>
+  </div>
+</div></x-dc>
+</body>
+</html>

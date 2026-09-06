@@ -1,0 +1,78 @@
+{
+  "artboards": [
+    {
+      "file": "PreCall.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 820,
+      "title": "Pre-call \u2014 light"
+    },
+    {
+      "file": "Main.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Live call \u2014 dark"
+    },
+    {
+      "file": "Scored.dc.html",
+      "x": 0,
+      "y": 1060,
+      "w": 1440,
+      "h": 1140,
+      "title": "Scored \u2014 light"
+    },
+    {
+      "file": "VoiceStates.dc.html",
+      "x": 1560,
+      "y": 1060,
+      "w": 1240,
+      "h": 880,
+      "title": "The waveline \u2014 state language"
+    },
+    {
+      "file": "Mobile.dc.html",
+      "x": 0,
+      "y": 2360,
+      "w": 390,
+      "h": 844,
+      "title": "Phone \u2014 live"
+    },
+    {
+      "file": "MobileScored.dc.html",
+      "x": 510,
+      "y": 2360,
+      "w": 390,
+      "h": 844,
+      "title": "Phone \u2014 scored, dark"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "brief",
+      "x": 0,
+      "y": -280,
+      "w": 460,
+      "text": "Interview Coach \u2014 UI design\n\nTokens lifted verbatim from web/styles.css, so the mock and the shipped app cannot drift. IBM Plex Sans + Plex Mono; anything in mono is a measured quantity or a machine id."
+    },
+    {
+      "id": "pushed",
+      "x": 1560,
+      "y": -280,
+      "w": 520,
+      "text": "Pushed past what ships today:\n\u00b7 the turn ribbon \u2014 every turn as one bar, notched where a barge-in landed\n\u00b7 sparklines against the 800 ms budget line\n\u00b7 backchannel marks in the transcript gutter\n\u00b7 tool calls typeset as system chrome, not a bubble\n\u00b7 a real hero on the pre-call screen"
+    },
+    {
+      "id": "states-note",
+      "x": 1560,
+      "y": 2010,
+      "w": 520,
+      "text": "The state language is the design. Only three objects react to voice state \u2014 the waveline, the pill, and the call button's left edge. Every surface and number stays colour-locked so the page is readable while it changes."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
