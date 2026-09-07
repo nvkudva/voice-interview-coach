@@ -1,163 +1,93 @@
-# Voice Interview Coach
+# voice-interview-coach
 
-A real-time LiveKit voice agent you can call, interrupt, and that calls tools.
-It runs a system-design interview as a **video call**: a photoreal coach on
-camera asks a question, listens through a long answer, pushes back on
-hand-waving, and scores the result as JSON. Your camera is on too — you join
-through a device-check lobby, the way you would join a real interview.
+A LiveKit voice-and-video agent that runs a system-design mock interview and scores it, for anyone practising interviews or reading the code as a reference real-time agent.
 
-Built as a portfolio piece and as the foundation for later voice products.
-Full spec in [`prd.md`](prd.md).
+Written as a portfolio piece; the full product spec is in [`prd.md`](prd.md).
 
----
+[Docs](docs/)
 
-## What it does
+## Requirements
 
-- **It looks like the interview.** A photoreal avatar joins the room on video
-  and speaks the coach's lines in lip-sync; your camera publishes alongside it.
-  A failed avatar degrades to voice, never to silence.
-- **Turn-taking that survives a real conversation.** Semantic end-of-turn
-  detection, not a silence timer — thinking mid-sentence does not hand the
-  floor to the agent.
-- **Interruption that knows the difference.** "Mhm" does not stop it. "Wait,
-  that's wrong" does. Both counted separately.
-- **Three tools, no dead air.** Every tool speaks a filler phrase if it blocks.
-- **Structured output.** Full transcript plus a validated JSON score per session.
-- **Swappable everything.** STT, LLM and TTS come from `.env`. No provider name
-  appears in agent logic.
-- **English and Hindi**, including the Hinglish people actually speak.
-- **Per-turn metrics dashboard.** STT, LLM TTFT, TTS TTFB, interruptions, cost.
+- Python 3.11 or newer
+- [`uv`](https://github.com/astral-sh/uv) and `make` — `make install` uses `uv venv` and `uv pip`
+- A LiveKit Cloud project (URL, API key, API secret). Self-hosting is out of scope
+- API keys for the default pipeline: Anthropic (LLM), Deepgram (STT), Cartesia (TTS)
+- A webcam and microphone for the browser client. The avatar leg bills per minute of
+  wall-clock video, so keep `AVATAR_ENABLED=false` unless you want to pay for it
 
-## Latency
-
-Target: **under 800 ms** from end of speech to first agent audio, p95.
-
-| Stage | Budget | p50 | p95 | max |
-|---|---|---|---|---|
-| End of speech → EOT decision | 300 ms | — | — | — |
-| Final transcript | 100 ms | — | — | — |
-| LLM time-to-first-token | 250 ms | — | — | — |
-| TTS time-to-first-byte | 120 ms | — | — | — |
-| **Total** | **800 ms** | — | — | — |
-
-Measured numbers land here after milestone 3. Fill it with `make bench`, which
-reads real `EOUMetrics` / `LLMMetrics` / `TTSMetrics` from recorded sessions —
-not a stopwatch. p95 is nearest-rank, so every number printed is a latency that
-actually happened.
-
-## Cost
-
-**$0.65 per 5-minute session** with video, **$0.15** without. Avatar video
-bills per minute of wall-clock — including silence — and is about four fifths
-of a session, so `AVATAR_ENABLED=false` is a bigger saving than every voice-side
-optimisation combined. Breakdown in [`docs/cost.md`](docs/cost.md).
-
-## Quick start
+## Run it
 
 ```bash
-cp .env.example .env      # fill in LiveKit + provider keys
+git clone https://github.com/nvkudva/voice-interview-coach.git
+cd voice-interview-coach
 make install
-make console              # talk to it in the terminal
+cp .env.example .env    # fill in the variables below
+make console            # talk to the agent in the terminal
 ```
 
-Then the browser client:
+For the browser client, run the worker and the token server in two terminals:
 
 ```bash
-make dev                  # terminal 1: the agent worker
-make api                  # terminal 2: token server + client on :8080
-open http://localhost:8080
+make dev                # terminal 1: worker, connects to LiveKit Cloud
+make api                # terminal 2: token server + static client on :8080
 ```
 
-## Stack
+Working means `make console` holds a spoken turn in the terminal, and
+`http://localhost:8080` puts you through a device-check lobby into a room where the
+coach speaks and the transcript fills in.
 
-| Layer | Default | Swap with |
+## Configuration
+
+`.env.example` lists every variable with comments. The ones you cannot skip:
+
+| Variable | Required | What it is |
 |---|---|---|
-| Transport | LiveKit Cloud | `LIVEKIT_URL` |
-| STT | `deepgram/nova-3`, `language=multi` | `STT_MODEL` |
-| LLM | `anthropic/claude-sonnet-4-6` | `LLM_MODEL` |
-| TTS | `cartesia/sonic-3` | `TTS_MODEL` |
-| Avatar | `lemonslice` | `AVATAR_MODEL` (or `AVATAR_ENABLED=false`) |
-| VAD | silero, `min_silence_duration=0.2` | `VAD_MIN_SILENCE` |
-| Turn detection | `inference.TurnDetector()` | — |
+| `LIVEKIT_URL` | yes | `wss://` URL of your LiveKit Cloud project |
+| `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | yes | LiveKit credentials; the API server signs room tokens with them |
+| `ANTHROPIC_API_KEY` | yes | Default LLM (`anthropic/claude-sonnet-4-6`) |
+| `DEEPGRAM_API_KEY` | yes | Default STT (`deepgram/nova-3`, `language=multi`) |
+| `CARTESIA_API_KEY` | yes | Default TTS (`cartesia/sonic-3`) |
+| `AVATAR_ENABLED` | no | `true` joins a photoreal avatar on video. `false` is voice only |
+| `STT_MODEL` / `LLM_MODEL` / `TTS_MODEL` | no | `provider/model` strings; swapping them needs no code change |
+| `COST_CEILING_USD` | no | Logged-only warning threshold per session. Nothing enforces it |
+| `CORS_ORIGINS` | no | Defaults to `*`. Narrow it before exposing the API |
 
-Each leg is wrapped in the framework's `FallbackAdapter` when a `*_FALLBACK` is
-set, so a provider outage degrades instead of going silent.
+## How it works
 
-## The configuration that matters
+`api/server.py` mints a LiveKit room token, embedding the language and question id as
+dispatch metadata, and serves the browser client in `web/`. `agent/main.py` is the
+worker: it reads that metadata back, builds an `AgentSession` from the builders in
+`agent/config.py`, brings up the optional avatar (`agent/avatar.py`) before the session
+starts, and degrades to voice if the avatar never joins. Every model is a
+`provider/model` string resolved in `agent/config.py`, so no provider name appears in
+agent logic. `agent/metrics_sink.py` stitches per-turn STT, LLM and TTS metrics with
+prices from `agent/pricing.py`, publishes them to the browser over a data channel, and
+`agent/storage.py` writes one JSON file per session — transcript, turn metrics and an
+LLM-generated score from `agent/scoring.py`. `bench/latency.py` reads those same files
+to produce the latency table and act as a CI gate.
 
-```python
-AgentSession(
-    turn_handling={
-        "turn_detection": inference.TurnDetector(),
-        "endpointing": {"mode": "dynamic", "min_delay": 0.3, "max_delay": 2.5},
-        "interruption": {"mode": "adaptive", "min_duration": 0.5},
-        "preemptive_generation": {"enabled": True},
-    },
-)
-```
+## Status
 
-Plus the one default that will cost you 350 ms if you leave it alone: silero's
-`min_silence_duration` ships at 0.55 s. Set it to 0.2 s and let the semantic
-model decide when the turn ends, not the energy detector.
-[`docs/tuning.md`](docs/tuning.md) has the rest.
+Not verified against a live call. The code for the console agent, browser client, tools
+and scoring is written, but no milestone has been confirmed end to end against LiveKit
+Cloud, and there is no deployed demo.
 
-## The interface
+- **Latency:** the 800 ms p95 end-of-speech-to-first-audio figure is a **target**, not a
+  measurement. No benchmark run exists. `make bench` builds the table from recorded
+  sessions once there are any.
+- **Cost:** roughly $0.65 per five-minute session with avatar video and $0.15 without.
+  Both are **arithmetic from provider rate cards** in [`docs/cost.md`](docs/cost.md),
+  not billed amounts.
+- **Known defects:** every `/api/*` route is unauthenticated, so anyone who can reach
+  the API can list, read and delete stored transcripts and mint agent-dispatching
+  tokens. The transcript is rewritten to disk synchronously on every conversation item.
+  With `PREEMPTIVE_GENERATION=true`, metrics can be attributed to the wrong turn, and
+  incomplete turns are included in the percentile. See [`REVIEW.md`](REVIEW.md).
+- **Tests:** `make test` runs the suite with no network and no API keys. It covers
+  config, pricing, storage, metrics stitching, avatar spec parsing and the API routes.
+  `agent/main.py` and `bench/latency.py` have no tests.
+- **Not built:** SIP inbound number, public demo, and any authentication.
 
-One page, two audiences, split by time rather than space. **During a call the
-candidate owns the screen** — a status pill, the transcript, and three plain
-chips. **After it the engineer does**: `Engineer view` (sticky, and
-deep-linkable as `?view=engineer`) reveals the per-turn table, the p95, and the
-cost line. `See a completed run` loads a stored session, so an evaluator can
-read the numbers without talking to it.
+## License
 
-Two ideas carry the visual identity:
-
-- **The waveline is the app bar's rule.** There is no `border-bottom` — a
-  hairline sits in its place and *is* the voice indicator: flat when idle, a
-  one-pixel breath when the mic is open, a constant-rate travelling segment
-  while thinking, a real waveform from the output analyser while speaking. It
-  costs no layout and can be read peripherally while you talk.
-- **The turn spine.** Transcript and metrics are one ledger indexed by the same
-  mono turn number; hovering either side highlights the other. Density becomes
-  navigation instead of a spreadsheet parked beside a chat.
-
-Both themes follow the OS with an explicit toggle. Every over-budget value is
-marked four ways — caret, weight, underline, and a bar that overshoots its tick
-— so the page survives greyscale. Full specs in
-[`docs/design-system.md`](docs/design-system.md) and
-[`docs/ux-spec.md`](docs/ux-spec.md).
-
-## Layout
-
-```
-agent/      worker, persona, tools, scoring, metrics, pricing
-api/        token server, config, session read + delete
-web/        browser client and metrics dashboard
-bench/      latency table generator and CI gate
-sip/        inbound trunk + dispatch rule
-docs/       design system, UX spec, tuning, cost, decisions
-```
-
-## Milestones
-
-- [ ] 1 · Console agent, one full turn (code in place, unverified against a live call)
-- [x] 2 · Browser client built — video room, device lobby (deploy pending)
-- [ ] 3 · Latency tuned, p95 under 800 ms over 20 turns
-- [ ] 4 · Three tools with filler speech
-- [ ] 5 · Coach persona and JSON scoring
-- [ ] 6 · SIP inbound number
-- [ ] 7 · Public demo link and this table filled in
-
-## Privacy
-
-Nothing is stored beyond the transcript, metrics and score. No name, no email;
-inbound caller ID is never recorded. `DELETE /api/sessions/{id}` erases a
-session and is idempotent. Records expire after 30 days.
-
-## Development
-
-```bash
-make test     # 34 tests, no network, no API keys
-make lint
-make bench
-```
+No licence file yet — all rights reserved.
